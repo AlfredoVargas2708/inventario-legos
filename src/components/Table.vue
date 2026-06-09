@@ -1,16 +1,22 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { useDataSharingService } from "@/api/data-sharing.service";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Card from "primevue/card";
 import Tag from "primevue/tag";
+import Dialog from "primevue/dialog";
+import ConfirmDialog from "primevue/confirmdialog";
+import { useConfirm } from "primevue/useconfirm";
 import type { DataTablePageEvent } from "primevue/datatable";
 import Button from "primevue/button";
+import Editar from "./Editar.vue";
+import { deletePedido, type PedidoRow } from "@/api/api.service";
 
 const dataService = useDataSharingService();
 const { tableData, column, pagination, loading } = storeToRefs(dataService);
+const confirm = useConfirm();
 
 const data = computed(() => (Array.isArray(tableData.value) ? tableData.value : []));
 const hasData = computed(() => (pagination.value?.total ?? 0) > 0);
@@ -32,6 +38,45 @@ function yesNoSeverity(value: string | null | undefined) {
 
 function onPage(event: DataTablePageEvent) {
   dataService.fetchSearch(event.page + 1, event.rows);
+}
+
+const editDialogVisible = ref(false);
+const selectedPedido = ref<PedidoRow | null>(null);
+
+function openEdit(row: PedidoRow) {
+  selectedPedido.value = row;
+  editDialogVisible.value = true;
+}
+
+function onPedidoUpdated() {
+  editDialogVisible.value = false;
+  selectedPedido.value = null;
+}
+
+function confirmDelete(row: PedidoRow) {
+  confirm.require({
+    message: `¿Eliminar el pedido Lego ${row.lego} / Pieza ${row.pieza} (bolsa ${row.task})? Esta acción no se puede deshacer.`,
+    header: "Confirmar eliminación",
+    icon: "pi pi-exclamation-triangle",
+    rejectLabel: "Cancelar",
+    acceptLabel: "Eliminar",
+    rejectProps: {
+      label: "Cancelar",
+      severity: "secondary",
+      outlined: true,
+    },
+    acceptProps: {
+      label: "Eliminar",
+      severity: "danger",
+    },
+    accept: async () => {
+      await deletePedido(row.id);
+      const page = pagination.value?.page ?? 1;
+      const pageSize = pagination.value?.pageSize ?? 6;
+      const isLastItemOnPage = data.value.length === 1 && page > 1;
+      await dataService.fetchSearch(isLastItemOnPage ? page - 1 : page, pageSize);
+    },
+  });
 }
 </script>
 
@@ -169,7 +214,7 @@ function onPage(event: DataTablePageEvent) {
             </template>
           </Column>
           <Column header="Acciones" header-class="col-actions" body-class="col-actions">
-            <template #body>
+            <template #body="{ data: row }">
               <div class="action-group">
                 <Button
                   icon="pi pi-pencil"
@@ -180,6 +225,7 @@ function onPage(event: DataTablePageEvent) {
                   aria-label="Editar"
                   title="Editar"
                   class="action-btn action-btn--edit"
+                  @click="openEdit(row)"
                 />
                 <Button
                   icon="pi pi-trash"
@@ -190,6 +236,7 @@ function onPage(event: DataTablePageEvent) {
                   aria-label="Eliminar"
                   title="Eliminar"
                   class="action-btn action-btn--delete"
+                  @click="confirmDelete(row)"
                 />
               </div>
             </template>
@@ -200,6 +247,25 @@ function onPage(event: DataTablePageEvent) {
         <i class="pi pi-arrows-h" aria-hidden="true" />
         Desliza horizontalmente para ver más columnas en pantallas pequeñas
       </p>
+
+      <ConfirmDialog />
+
+      <Dialog
+        v-model:visible="editDialogVisible"
+        modal
+        header="Editar pedido"
+        :style="{ width: '50vw' }"
+        :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+        :close-on-escape="true"
+        :dismissable-mask="true"
+      >
+        <Editar
+          :visible="editDialogVisible"
+          :pedido="selectedPedido"
+          @close="editDialogVisible = false"
+          @success="onPedidoUpdated"
+        />
+      </Dialog>
     </template>
   </Card>
 </template>

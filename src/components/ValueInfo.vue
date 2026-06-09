@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import Card from "primevue/card";
 import Tag from "primevue/tag";
 import DataView from "primevue/dataview";
 import { useDataSharingService } from "@/api/data-sharing.service";
 import Button from "primevue/button";
+import Dialog from "primevue/dialog";
+import Agregar from "./Agregar.vue";
 
 type InfoItem =
   | { label: string; type: "text"; value: string | number }
@@ -16,6 +18,7 @@ const { column, valueInfo } = storeToRefs(useDataSharingService());
 
 const isLego = computed(() => column.value === "lego");
 const isPieza = computed(() => column.value === "pieza");
+const dialogVisible = ref(false);
 
 const totalResults = computed(() => valueInfo.value?.pagination?.total ?? 0);
 
@@ -45,9 +48,6 @@ const piezaInfo = computed(() => {
     designId: info.design_id,
   };
 });
-
-const displayImage = computed(() => legoInfo.value?.img ?? piezaInfo.value?.img ?? "");
-const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.title ?? "");
 
 const infoItems = computed((): InfoItem[] => {
   if (legoInfo.value) {
@@ -88,6 +88,13 @@ const infoItems = computed((): InfoItem[] => {
 
   return [];
 });
+
+const displayImage = computed(() => legoInfo.value?.img ?? piezaInfo.value?.img ?? "");
+const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.title ?? "");
+
+function onPedidoCreated() {
+  dialogVisible.value = false;
+}
 </script>
 
 <template>
@@ -106,7 +113,24 @@ const infoItems = computed((): InfoItem[] => {
             severity="success"
             outlined
             class="add-btn"
+            @click="dialogVisible = true"
           />
+
+          <Dialog
+            v-model:visible="dialogVisible"
+            modal
+            header="Agregar pedido"
+            :style="{ width: '50vw' }"
+            :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+            :close-on-escape="true"
+            :dismissable-mask="true"
+          >
+            <Agregar
+              :visible="dialogVisible"
+              @close="dialogVisible = false"
+              @success="onPedidoCreated"
+            />
+          </Dialog>
         </div>
 
         <DataView :value="infoItems" layout="list" class="info-body">

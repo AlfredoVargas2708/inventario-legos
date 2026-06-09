@@ -62,6 +62,12 @@ export const useDataSharingService = defineStore("dataSharing", () => {
     pagination.value = null;
   }
 
+  async function refreshResults() {
+    const page = pagination.value?.page ?? 1;
+    const pageSize = pagination.value?.pageSize ?? 6;
+    await fetchSearch(page, pageSize);
+  }
+
   return {
     column,
     searchValue,
@@ -72,6 +78,7 @@ export const useDataSharingService = defineStore("dataSharing", () => {
     setColumn,
     setSearchValue,
     fetchSearch,
+    refreshResults,
     clearResults,
   };
 });
