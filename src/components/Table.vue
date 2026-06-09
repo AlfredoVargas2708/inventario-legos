@@ -7,6 +7,7 @@ import Column from "primevue/column";
 import Card from "primevue/card";
 import Tag from "primevue/tag";
 import type { DataTablePageEvent } from "primevue/datatable";
+import Button from "primevue/button";
 
 const dataService = useDataSharingService();
 const { tableData, column, pagination, loading } = storeToRefs(dataService);
@@ -167,6 +168,32 @@ function onPage(event: DataTablePageEvent) {
               <span class="cell-comments">{{ row.comentarios ?? "Sin Comentarios" }}</span>
             </template>
           </Column>
+          <Column header="Acciones" header-class="col-actions" body-class="col-actions">
+            <template #body>
+              <div class="action-group">
+                <Button
+                  icon="pi pi-pencil"
+                  severity="info"
+                  outlined
+                  rounded
+                  size="small"
+                  aria-label="Editar"
+                  title="Editar"
+                  class="action-btn action-btn--edit"
+                />
+                <Button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  outlined
+                  rounded
+                  size="small"
+                  aria-label="Eliminar"
+                  title="Eliminar"
+                  class="action-btn action-btn--delete"
+                />
+              </div>
+            </template>
+          </Column>
         </DataTable>
       </div>
       <p class="table-hint">
@@ -241,6 +268,70 @@ function onPage(event: DataTablePageEvent) {
   white-space: nowrap;
 }
 
+.action-group {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.action-btn :deep(.p-button) {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.action-btn :deep(.p-button:not(:disabled):hover) {
+  transform: scale(1.08);
+}
+
+.action-btn--edit :deep(.p-button:not(:disabled):hover) {
+  background: var(--p-blue-50, #eff6ff);
+}
+
+.action-btn--delete :deep(.p-button:not(:disabled):hover) {
+  background: var(--p-red-50, #fef2f2);
+}
+
+.inventory-table :deep(.p-paginator) {
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding: 0.75rem 0.5rem;
+  border: none;
+  border-top: 1px solid var(--p-content-border-color, #e2e8f0);
+  background: var(--p-surface-50, #f8fafc);
+}
+
+.inventory-table :deep(.p-paginator-page),
+.inventory-table :deep(.p-paginator-first),
+.inventory-table :deep(.p-paginator-prev),
+.inventory-table :deep(.p-paginator-next),
+.inventory-table :deep(.p-paginator-last) {
+  min-width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.inventory-table :deep(.p-paginator-current) {
+  font-size: 0.8125rem;
+  color: var(--p-text-muted-color, #64748b);
+  font-weight: 500;
+}
+
+.inventory-table :deep(.p-select) {
+  border-radius: 8px;
+  font-size: 0.8125rem;
+}
+
 .table-hint {
   display: flex;
   align-items: center;
@@ -259,6 +350,11 @@ function onPage(event: DataTablePageEvent) {
 @media (max-width: 768px) {
   .inventory-table :deep(.col-optional) {
     display: none;
+  }
+
+  .action-group {
+    flex-direction: column;
+    gap: 0.25rem;
   }
 }
 
