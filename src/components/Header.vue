@@ -5,16 +5,19 @@ import ProgressSpinner from "primevue/progressspinner";
 import { ref, type ComponentPublicInstance } from "vue";
 import axios from "axios";
 import { searchValue } from "@/api/api.service";
+import { useDataSharingService } from "@/api/data-sharing.service";
 
 const selected = ref("");
 const options = ref([
   { label: "Lego", value: "lego" },
-  { label: "Pieza", value: "Pieza" },
+  { label: "Pieza", value: "pieza" },
 ]);
 
 const inputValue = ref("");
 const searchLoading = ref(false);
 const inputRef = ref<ComponentPublicInstance | null>(null);
+const dataService = useDataSharingService();
+const results = ref<any>();
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let abortController: AbortController | null = null;
@@ -24,20 +27,21 @@ async function search() {
   abortController?.abort();
   abortController = new AbortController();
   searchLoading.value = true;
+  dataService.setSearchValue(inputValue.value);
   try {
-    const results = await searchValue(
+    results.value = await searchValue(
       selected.value,
       inputValue.value,
       1,
       10,
       abortController.signal,
     );
-    console.log(results);
   } catch (error) {
     if (!axios.isCancel(error)) console.error(error);
   } finally {
     setTimeout(() => {
       searchLoading.value = false;
+      dataService.setTableData(results.value?.pedidos?.results);
     }, 1000);
   }
 }
@@ -49,9 +53,11 @@ function onInput() {
 
 function onSelect() {
   inputValue.value = "";
+  dataService.setTableData([]);
+  dataService.setColumn(selected.value);
   setTimeout(() => {
     (inputRef.value?.$el as HTMLInputElement | undefined)?.focus();
-  }, 1000);
+  }, 500);
 }
 </script>
 

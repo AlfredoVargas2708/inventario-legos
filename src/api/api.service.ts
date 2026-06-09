@@ -8,7 +8,7 @@ export const searchValue = async (
   page: number,
   pageSize: number,
   signal?: AbortSignal,
-): Promise<any[]> => {
+) => {
   const response = await axios.get(
     `${environment.apiUrl}/search/${column}/${encodeURIComponent(value)}?page=${page}&limit=${pageSize}`,
     { signal },
