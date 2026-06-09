@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Header from './components/Header.vue'
-import Table from './components/Table.vue'
-import ValueInfo from './components/ValueInfo.vue'
+import Header from "./components/Header.vue";
+import Table from "./components/Table.vue";
+import ValueInfo from "./components/ValueInfo.vue";
 </script>
 
 <template>
@@ -24,7 +24,6 @@ import ValueInfo from './components/ValueInfo.vue'
 
 .app-container {
   width: 100%;
-  max-width: 1280px;
   margin: 0 auto;
 }
 

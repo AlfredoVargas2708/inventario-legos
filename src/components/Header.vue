@@ -4,41 +4,41 @@ import InputText from "primevue/inputtext";
 import ProgressSpinner from "primevue/progressspinner";
 import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
-import { ref, type ComponentPublicInstance } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useDataSharingService } from '@/api/data-sharing.service'
+import { ref, type ComponentPublicInstance } from "vue";
+import { storeToRefs } from "pinia";
+import { useDataSharingService } from "@/api/data-sharing.service";
 
-const selected = ref('')
+const selected = ref("");
 const options = ref([
-  { label: 'Lego', value: 'lego' },
-  { label: 'Pieza', value: 'pieza' },
-])
+  { label: "Lego", value: "lego" },
+  { label: "Pieza", value: "pieza" },
+]);
 
-const inputValue = ref('')
-const inputRef = ref<ComponentPublicInstance | null>(null)
-const dataService = useDataSharingService()
-const { loading } = storeToRefs(dataService)
+const inputValue = ref("");
+const inputRef = ref<ComponentPublicInstance | null>(null);
+const dataService = useDataSharingService();
+const { loading } = storeToRefs(dataService);
 
-let debounceTimer: ReturnType<typeof setTimeout> | null = null
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 async function search() {
-  if (!selected.value || !inputValue.value.trim()) return
-  dataService.setSearchValue(inputValue.value)
-  await dataService.fetchSearch(1)
+  if (!selected.value || !inputValue.value.trim()) return;
+  dataService.setSearchValue(inputValue.value);
+  await dataService.fetchSearch(1);
 }
 
 function onInput() {
-  if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(search, 1000)
+  if (debounceTimer) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(search, 1000);
 }
 
 function onSelect() {
-  inputValue.value = ''
-  dataService.clearResults()
-  dataService.setColumn(selected.value)
+  inputValue.value = "";
+  dataService.clearResults();
+  dataService.setColumn(selected.value);
   setTimeout(() => {
-    ;(inputRef.value?.$el as HTMLInputElement | undefined)?.focus()
-  }, 500)
+    (inputRef.value?.$el as HTMLInputElement | undefined)?.focus();
+  }, 500);
 }
 </script>
 
@@ -161,7 +161,7 @@ function onSelect() {
   }
 
   .search-field--type {
-    flex: 0 0 10rem;
+    flex: 0 0 12rem;
   }
 }
 

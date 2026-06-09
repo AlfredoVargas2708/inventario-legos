@@ -3,7 +3,13 @@ import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import Card from 'primevue/card'
 import Tag from 'primevue/tag'
+import DataView from 'primevue/dataview'
 import { useDataSharingService } from '@/api/data-sharing.service'
+
+type InfoItem =
+  | { label: string; type: 'text'; value: string | number }
+  | { label: string; type: 'tag'; value: string; severity: 'secondary' | 'info' }
+  | { label: string; type: 'color'; value: string; rgb: string }
 
 const { column, valueInfo } = storeToRefs(useDataSharingService())
 
@@ -22,7 +28,6 @@ const legoInfo = computed(() => {
     year: info.year,
     theme: info.theme?.at(-1)?.name,
     numParts: info.num_parts,
-    url: info.set_url,
   }
 })
 
@@ -39,43 +44,83 @@ const piezaInfo = computed(() => {
     designId: info.design_id,
   }
 })
+
+const displayImage = computed(() => legoInfo.value?.img ?? piezaInfo.value?.img ?? '')
+const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.title ?? '')
+
+const infoItems = computed((): InfoItem[] => {
+  if (legoInfo.value) {
+    const l = legoInfo.value
+    return [
+      { label: 'Tipo', type: 'tag', value: 'Set LEGO', severity: 'secondary' },
+      { label: 'Nombre', type: 'text', value: l.title },
+      { label: 'Set N°', type: 'text', value: l.subtitle },
+      { label: 'Año', type: 'text', value: l.year },
+      { label: 'Tema', type: 'text', value: l.theme },
+      { label: 'Piezas', type: 'text', value: `${l.numParts} piezas` },
+      {
+        label: 'Pedidos',
+        type: 'tag',
+        value: `${totalResults.value} pedidos`,
+        severity: 'info',
+      },
+    ]
+  }
+
+  if (piezaInfo.value) {
+    const p = piezaInfo.value
+    return [
+      { label: 'Tipo', type: 'tag', value: 'Pieza', severity: 'secondary' },
+      { label: 'Nombre', type: 'text', value: p.title },
+      { label: 'Elemento', type: 'text', value: p.subtitle },
+      { label: 'Color', type: 'color', value: p.colorName, rgb: p.colorRgb },
+      { label: 'Part N°', type: 'text', value: p.partNum },
+      { label: 'Design ID', type: 'text', value: p.designId },
+      {
+        label: 'Pedidos',
+        type: 'tag',
+        value: `${totalResults.value} pedidos`,
+        severity: 'info',
+      },
+    ]
+  }
+
+  return []
+})
 </script>
 
 <template>
-  <Card v-if="valueInfo && (legoInfo || piezaInfo)" class="info-card">
+  <Card v-if="infoItems.length" class="info-card">
     <template #content>
-      <div v-if="legoInfo" class="info-layout">
+      <div class="info-layout">
         <div class="info-media">
-          <img :src="legoInfo.img" :alt="legoInfo.title" class="info-img" />
+          <img :src="displayImage" :alt="displayAlt" class="info-img" />
         </div>
-        <div class="info-body">
-          <Tag value="Set LEGO" severity="secondary" />
-          <h2 class="info-title">{{ legoInfo.title }}</h2>
-          <span class="info-subtitle">{{ legoInfo.subtitle }}</span>
-          <span class="info-meta">
-            {{ legoInfo.year }} · {{ legoInfo.theme }} · {{ legoInfo.numParts }} piezas
-          </span>
-          <Tag :value="`${totalResults} pedidos`" severity="info" />
-        </div>
-      </div>
 
-      <div v-else-if="piezaInfo" class="info-layout">
-        <div class="info-media">
-          <img :src="piezaInfo.img" :alt="piezaInfo.title" class="info-img" />
-        </div>
-        <div class="info-body">
-          <Tag value="Pieza" severity="secondary" />
-          <h2 class="info-title">{{ piezaInfo.title }}</h2>
-          <span class="info-subtitle">Elemento {{ piezaInfo.subtitle }}</span>
-          <span class="info-meta info-meta--color">
-            <span
-              class="color-swatch"
-              :style="{ backgroundColor: `#${piezaInfo.colorRgb}` }"
-            />
-            {{ piezaInfo.colorName }} · Part {{ piezaInfo.partNum }}
-          </span>
-          <Tag :value="`${totalResults} pedidos`" severity="info" />
-        </div>
+        <DataView :value="infoItems" layout="list" class="info-body">
+          <template #list="{ items }">
+            <ul class="info-list">
+              <li v-for="item in items" :key="item.label" class="info-list-item">
+                <span class="info-list-label">{{ item.label }}</span>
+                <span class="info-list-value">
+                  <Tag
+                    v-if="item.type === 'tag'"
+                    :value="item.value"
+                    :severity="item.severity"
+                  />
+                  <span v-else-if="item.type === 'color'" class="info-color">
+                    <span
+                      class="color-swatch"
+                      :style="{ backgroundColor: `#${item.rgb}` }"
+                    />
+                    {{ item.value }}
+                  </span>
+                  <span v-else>{{ item.value }}</span>
+                </span>
+              </li>
+            </ul>
+          </template>
+        </DataView>
       </div>
     </template>
   </Card>
@@ -98,7 +143,7 @@ const piezaInfo = computed(() => {
 .info-layout {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: 1.25rem;
 }
 
@@ -122,36 +167,61 @@ const piezaInfo = computed(() => {
 }
 
 .info-body {
-  display: flex;
   flex: 1;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.375rem 0.75rem;
   min-width: 0;
 }
 
-.info-title {
+.info-body :deep(.p-dataview-content) {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.info-list {
+  list-style: none;
   margin: 0;
-  font-size: 1.125rem;
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
+  padding: 0;
+  width: 100%;
+  border: 1px solid var(--p-content-border-color, #e2e8f0);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.info-subtitle {
-  font-size: 0.875rem;
+.info-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.625rem 0.875rem;
+  background: var(--p-content-background, #fff);
+  border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+}
+
+.info-list-item:last-child {
+  border-bottom: none;
+}
+
+.info-list-item:nth-child(even) {
+  background: var(--p-surface-50, #f8fafc);
+}
+
+.info-list-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--p-text-muted-color, #64748b);
-  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.info-meta {
+.info-list-value {
   font-size: 0.875rem;
-  color: var(--p-text-color, #334155);
-  white-space: nowrap;
+  font-weight: 500;
+  text-align: right;
+  min-width: 0;
 }
 
-.info-meta--color {
+.info-color {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
@@ -171,26 +241,16 @@ const piezaInfo = computed(() => {
     width: 8.5rem;
     height: 8.5rem;
   }
-
-  .info-title {
-    font-size: 1.25rem;
-  }
 }
 
 @media (max-width: 575px) {
   .info-layout {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
 
-  .info-body {
-    width: 100%;
-  }
-
-  .info-title,
-  .info-subtitle,
-  .info-meta {
-    white-space: normal;
+  .info-media {
+    align-self: center;
   }
 }
 </style>
