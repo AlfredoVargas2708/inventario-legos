@@ -5,6 +5,7 @@ export const useDataSharingService = defineStore("dataSharing", () => {
   const column = ref<string>("");
   const searchValue = ref<string>("");
   const tableData = ref<any[]>();
+  const valueInfo = ref<any>();
 
   function setColumn(columnValue: string) {
     column.value = columnValue;
@@ -30,15 +31,26 @@ export const useDataSharingService = defineStore("dataSharing", () => {
     return tableData;
   }
 
+  function setValueInfo(info: any) {
+    valueInfo.value = info;
+  }
+
+  function getValueInfo() {
+    return valueInfo.value;
+  }
+
   return {
     column,
     searchValue,
     tableData,
+    valueInfo,
     setColumn,
     getColumn,
     setSearchValue,
     getSearchValue,
     setTableData,
     getTableData,
+    setValueInfo,
+    getValueInfo,
   };
 });

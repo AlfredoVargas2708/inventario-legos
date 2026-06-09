@@ -2,6 +2,8 @@
 import Select from "primevue/select";
 import InputText from "primevue/inputtext";
 import ProgressSpinner from "primevue/progressspinner";
+import IconField from "primevue/iconfield";
+import InputIcon from "primevue/inputicon";
 import { ref, type ComponentPublicInstance } from "vue";
 import axios from "axios";
 import { searchValue } from "@/api/api.service";
@@ -42,6 +44,7 @@ async function search() {
     setTimeout(() => {
       searchLoading.value = false;
       dataService.setTableData(results.value?.pedidos?.results);
+      dataService.setValueInfo(results.value);
     }, 1000);
   }
 }
@@ -54,6 +57,7 @@ function onInput() {
 function onSelect() {
   inputValue.value = "";
   dataService.setTableData([]);
+  dataService.setValueInfo(null);
   dataService.setColumn(selected.value);
   setTimeout(() => {
     (inputRef.value?.$el as HTMLInputElement | undefined)?.focus();
@@ -62,16 +66,19 @@ function onSelect() {
 </script>
 
 <template>
-  <header class="p-3 md:p-4">
-    <div class="grid">
-      <!-- Fila 1: título -->
-      <div class="col-12">
-        <h1 class="m-0 text-2xl md:text-3xl line-height-2">Inventario de Legos</h1>
+  <header class="app-header">
+    <div class="header-top">
+      <div>
+        <h1 class="header-title">Inventario de Legos</h1>
+        <p class="header-subtitle">Busca por set o pieza para ver pedidos e inventario</p>
       </div>
+    </div>
 
-      <!-- Fila 2: Select -->
-      <div class="col-12 md:col-4 lg:col-2">
+    <div class="search-bar">
+      <div class="search-field search-field--type">
+        <label for="search-type" class="field-label">Tipo</label>
         <Select
+          id="search-type"
           v-model="selected"
           :options="options"
           placeholder="Elige una opción"
@@ -82,33 +89,112 @@ function onSelect() {
         />
       </div>
 
-      <!-- Fila 2: Input + spinner (grid anidado) -->
-      <div class="col-12 md:col-8 lg:col-3">
-        <div class="grid align-items-center">
-          <div class="col">
-            <InputText
-              ref="inputRef"
-              v-model="inputValue"
-              placeholder="Ingrese un valor"
-              :disabled="!selected"
-              class="w-full"
-              @input="onInput"
-            />
-          </div>
-          <div
-            v-if="searchLoading"
-            class="col-fixed flex align-items-center justify-content-center"
-            style="width: 2.5rem"
-          >
-            <ProgressSpinner
-              style="width: 2rem; height: 2rem"
-              stroke-width="8"
-              fill="transparent"
-              animation-duration=".5s"
-            />
-          </div>
-        </div>
+      <div class="search-field search-field--query">
+        <label for="search-query" class="field-label">Valor</label>
+        <IconField class="w-full">
+          <InputIcon class="pi pi-search" />
+          <InputText
+            id="search-query"
+            ref="inputRef"
+            v-model="inputValue"
+            :placeholder="`Ingrese código de ${selected}`"
+            :disabled="!selected"
+            class="w-full"
+            @input="onInput"
+          />
+        </IconField>
+      </div>
+
+      <div v-if="searchLoading" class="search-spinner" aria-label="Buscando">
+        <ProgressSpinner
+          style="width: 1.75rem; height: 1.75rem"
+          stroke-width="6"
+          fill="transparent"
+          animation-duration=".5s"
+        />
       </div>
     </div>
   </header>
 </template>
+
+<style scoped>
+.app-header {
+  background: var(--p-content-background, #fff);
+  border: 1px solid var(--p-content-border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+}
+
+.header-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.header-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--p-text-muted-color, #64748b);
+}
+
+.search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.search-field--type {
+  flex: 0 0 100%;
+}
+
+.search-field--query {
+  flex: 1 1 12rem;
+}
+
+.field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--p-text-muted-color, #64748b);
+}
+
+.search-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+}
+
+@media (min-width: 576px) {
+  .header-title {
+    font-size: 1.75rem;
+  }
+
+  .search-field--type {
+    flex: 0 0 10rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .app-header {
+    padding: 1.5rem 1.75rem;
+  }
+
+  .header-title {
+    font-size: 2rem;
+  }
+}
+</style>
