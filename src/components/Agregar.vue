@@ -152,7 +152,10 @@ async function validateField(field: FieldName): Promise<boolean> {
 
   try {
     const exists = await searchExistValue(field, value, abortControllers[field]!.signal);
-    fieldStatus[field] = exists ? "valid" : "invalid";
+    fieldStatus[field] = exists.result ? "valid" : "invalid";
+    if (field === "lego") {
+      form.set_nombre = exists.theme_name;
+    }
     return exists;
   } catch (error) {
     if (axios.isCancel(error)) {
@@ -173,10 +176,7 @@ function onFieldInput(field: FieldName) {
 }
 
 async function ensureFieldsValid() {
-  const [legoOk, piezaOk] = await Promise.all([
-    validateField("lego"),
-    validateField("pieza"),
-  ]);
+  const [legoOk, piezaOk] = await Promise.all([validateField("lego"), validateField("pieza")]);
   return legoOk && piezaOk;
 }
 
@@ -292,6 +292,7 @@ async function submit() {
           v-model="form.set_nombre"
           placeholder="Set Nombre"
           class="w-full"
+          disabled
         />
       </div>
 

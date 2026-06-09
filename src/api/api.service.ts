@@ -47,8 +47,8 @@ export const searchExistValue = async (
   column: string,
   value: string,
   signal?: AbortSignal,
-): Promise<boolean> => {
-  const response = await axios.get<boolean>(
+): Promise<any> => {
+  const response = await axios.get<any>(
     `${environment.apiUrl}/element-exist/${column}/${encodeURIComponent(value)}`,
     { signal },
   );
