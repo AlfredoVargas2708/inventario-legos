@@ -1,4 +1,5 @@
+// src/environments/environment.ts
 export const environment = {
-  apiUrl: "http://localhost:3000/api",
-  production: false,
+  apiUrl: import.meta.env.VITE_API_URL,
+  production: import.meta.env.PROD,
 };
