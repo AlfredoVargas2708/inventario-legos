@@ -1,24 +1,36 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { useDataSharingService } from '@/api/data-sharing.service'
-import { computed } from 'vue'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Card from 'primevue/card'
-import Tag from 'primevue/tag'
+import { storeToRefs } from "pinia";
+import { useDataSharingService } from "@/api/data-sharing.service";
+import { computed } from "vue";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import Card from "primevue/card";
+import Tag from "primevue/tag";
+import type { DataTablePageEvent } from "primevue/datatable";
 
-const dataService = useDataSharingService()
-const { tableData, column } = storeToRefs(dataService)
+const dataService = useDataSharingService();
+const { tableData, column, pagination, loading } = storeToRefs(dataService);
 
-const data = computed(() => (Array.isArray(tableData.value) ? tableData.value : []))
-const hasData = computed(() => data.value.length > 0)
+const data = computed(() => (Array.isArray(tableData.value) ? tableData.value : []));
+const hasData = computed(() => (pagination.value?.total ?? 0) > 0);
+
+const rows = computed(() => pagination.value?.pageSize ?? 5);
+const totalRecords = computed(() => pagination.value?.total ?? 0);
+const first = computed(() => {
+  const page = pagination.value?.page ?? 1;
+  return (page - 1) * rows.value;
+});
 
 const getValue = (row: any, legoGetter: (row: any) => any, setGetter: (row: any) => any) => {
-  return column.value === 'lego' ? legoGetter(row) : setGetter(row)
-}
+  return column.value === "lego" ? legoGetter(row) : setGetter(row);
+};
 
 function yesNoSeverity(value: string | null | undefined) {
-  return value === 'Si' ? 'success' : 'secondary'
+  return value === "Si" ? "success" : "secondary";
+}
+
+function onPage(event: DataTablePageEvent) {
+  dataService.fetchSearch(event.page + 1, event.rows);
 }
 </script>
 
@@ -31,10 +43,20 @@ function yesNoSeverity(value: string | null | undefined) {
       <div class="table-scroll">
         <DataTable
           :value="data"
+          lazy
+          paginator
+          :rows="rows"
+          :total-records="totalRecords"
+          :first="first"
+          :loading="loading"
+          :rows-per-page-options="[3, 6, 9, 12, 15, 18, 20]"
+          current-page-report-template="{first}–{last} de {totalRecords}"
+          template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
           striped-rows
           size="small"
           class="inventory-table"
           :pt="{ table: { style: 'min-width: 56rem' } }"
+          @page="onPage"
         >
           <Column header="Código" frozen>
             <template #body="{ data: row }">
@@ -125,13 +147,9 @@ function yesNoSeverity(value: string | null | undefined) {
             </template>
           </Column>
 
-          <Column
-            header="Reemplazado"
-            header-class="col-optional"
-            body-class="col-optional"
-          >
+          <Column header="Reemplazado" header-class="col-optional" body-class="col-optional">
             <template #body="{ data: row }">
-              {{ row.esta_reemplazado ?? 'Sin Reemplazo' }}
+              {{ row.esta_reemplazado ?? "Sin Reemplazo" }}
             </template>
           </Column>
 
@@ -146,7 +164,7 @@ function yesNoSeverity(value: string | null | undefined) {
 
           <Column header="Comentarios" header-class="col-optional" body-class="col-optional">
             <template #body="{ data: row }">
-              <span class="cell-comments">{{ row.comentarios ?? 'Sin Comentarios' }}</span>
+              <span class="cell-comments">{{ row.comentarios ?? "Sin Comentarios" }}</span>
             </template>
           </Column>
         </DataTable>

@@ -49,13 +49,13 @@ const piezaInfo = computed(() => {
           <img :src="legoInfo.img" :alt="legoInfo.title" class="info-img" />
         </div>
         <div class="info-body">
-          <Tag value="Set LEGO" severity="secondary" class="info-type-tag" />
+          <Tag value="Set LEGO" severity="secondary" />
           <h2 class="info-title">{{ legoInfo.title }}</h2>
-          <p class="info-subtitle">{{ legoInfo.subtitle }}</p>
-          <p class="info-meta">
+          <span class="info-subtitle">{{ legoInfo.subtitle }}</span>
+          <span class="info-meta">
             {{ legoInfo.year }} · {{ legoInfo.theme }} · {{ legoInfo.numParts }} piezas
-          </p>
-          <Tag :value="`${totalResults} pedidos`" severity="info" class="info-count-tag" />
+          </span>
+          <Tag :value="`${totalResults} pedidos`" severity="info" />
         </div>
       </div>
 
@@ -64,17 +64,17 @@ const piezaInfo = computed(() => {
           <img :src="piezaInfo.img" :alt="piezaInfo.title" class="info-img" />
         </div>
         <div class="info-body">
-          <Tag value="Pieza" severity="secondary" class="info-type-tag" />
+          <Tag value="Pieza" severity="secondary" />
           <h2 class="info-title">{{ piezaInfo.title }}</h2>
-          <p class="info-subtitle">Elemento {{ piezaInfo.subtitle }}</p>
-          <p class="info-meta info-meta--color">
+          <span class="info-subtitle">Elemento {{ piezaInfo.subtitle }}</span>
+          <span class="info-meta info-meta--color">
             <span
               class="color-swatch"
               :style="{ backgroundColor: `#${piezaInfo.colorRgb}` }"
             />
             {{ piezaInfo.colorName }} · Part {{ piezaInfo.partNum }}
-          </p>
-          <Tag :value="`${totalResults} pedidos`" severity="info" class="info-count-tag" />
+          </span>
+          <Tag :value="`${totalResults} pedidos`" severity="info" />
         </div>
       </div>
     </template>
@@ -97,10 +97,9 @@ const piezaInfo = computed(() => {
 
 .info-layout {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 1rem;
-  text-align: center;
+  gap: 1.25rem;
 }
 
 .info-media {
@@ -123,67 +122,75 @@ const piezaInfo = computed(() => {
 }
 
 .info-body {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.75rem;
   min-width: 0;
-}
-
-.info-type-tag {
-  margin-bottom: 0.5rem;
 }
 
 .info-title {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 .info-subtitle {
-  margin: 0.25rem 0 0;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: var(--p-text-muted-color, #64748b);
+  white-space: nowrap;
 }
 
 .info-meta {
-  margin: 0.5rem 0 0;
   font-size: 0.875rem;
   color: var(--p-text-color, #334155);
+  white-space: nowrap;
 }
 
 .info-meta--color {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-}
-
-.info-count-tag {
-  margin-top: 0.75rem;
+  gap: 0.375rem;
 }
 
 .color-swatch {
   display: inline-block;
-  width: 1rem;
-  height: 1rem;
+  width: 0.875rem;
+  height: 0.875rem;
   border-radius: 50%;
   border: 1px solid rgb(15 23 42 / 15%);
   flex-shrink: 0;
 }
 
-@media (min-width: 576px) {
-  .info-layout {
-    flex-direction: row;
-    align-items: flex-start;
-    text-align: left;
-    gap: 1.25rem;
-  }
-
+@media (min-width: 768px) {
   .info-media {
     width: 8.5rem;
     height: 8.5rem;
   }
 
   .info-title {
-    font-size: 1.375rem;
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 575px) {
+  .info-layout {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .info-body {
+    width: 100%;
+  }
+
+  .info-title,
+  .info-subtitle,
+  .info-meta {
+    white-space: normal;
   }
 }
 </style>

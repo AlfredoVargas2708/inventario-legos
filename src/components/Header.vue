@@ -4,64 +4,41 @@ import InputText from "primevue/inputtext";
 import ProgressSpinner from "primevue/progressspinner";
 import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
-import { ref, type ComponentPublicInstance } from "vue";
-import axios from "axios";
-import { searchValue } from "@/api/api.service";
-import { useDataSharingService } from "@/api/data-sharing.service";
+import { ref, type ComponentPublicInstance } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useDataSharingService } from '@/api/data-sharing.service'
 
-const selected = ref("");
+const selected = ref('')
 const options = ref([
-  { label: "Lego", value: "lego" },
-  { label: "Pieza", value: "pieza" },
-]);
+  { label: 'Lego', value: 'lego' },
+  { label: 'Pieza', value: 'pieza' },
+])
 
-const inputValue = ref("");
-const searchLoading = ref(false);
-const inputRef = ref<ComponentPublicInstance | null>(null);
-const dataService = useDataSharingService();
-const results = ref<any>();
+const inputValue = ref('')
+const inputRef = ref<ComponentPublicInstance | null>(null)
+const dataService = useDataSharingService()
+const { loading } = storeToRefs(dataService)
 
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-let abortController: AbortController | null = null;
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 async function search() {
-  if (!selected.value || !inputValue.value.trim()) return;
-  abortController?.abort();
-  abortController = new AbortController();
-  searchLoading.value = true;
-  dataService.setSearchValue(inputValue.value);
-  try {
-    results.value = await searchValue(
-      selected.value,
-      inputValue.value,
-      1,
-      10,
-      abortController.signal,
-    );
-  } catch (error) {
-    if (!axios.isCancel(error)) console.error(error);
-  } finally {
-    setTimeout(() => {
-      searchLoading.value = false;
-      dataService.setTableData(results.value?.pedidos?.results);
-      dataService.setValueInfo(results.value);
-    }, 1000);
-  }
+  if (!selected.value || !inputValue.value.trim()) return
+  dataService.setSearchValue(inputValue.value)
+  await dataService.fetchSearch(1)
 }
 
 function onInput() {
-  if (debounceTimer) clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(search, 1000);
+  if (debounceTimer) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(search, 1000)
 }
 
 function onSelect() {
-  inputValue.value = "";
-  dataService.setTableData([]);
-  dataService.setValueInfo(null);
-  dataService.setColumn(selected.value);
+  inputValue.value = ''
+  dataService.clearResults()
+  dataService.setColumn(selected.value)
   setTimeout(() => {
-    (inputRef.value?.$el as HTMLInputElement | undefined)?.focus();
-  }, 500);
+    ;(inputRef.value?.$el as HTMLInputElement | undefined)?.focus()
+  }, 500)
 }
 </script>
 
@@ -105,7 +82,7 @@ function onSelect() {
         </IconField>
       </div>
 
-      <div v-if="searchLoading" class="search-spinner" aria-label="Buscando">
+      <div v-if="loading" class="search-spinner" aria-label="Buscando">
         <ProgressSpinner
           style="width: 1.75rem; height: 1.75rem"
           stroke-width="6"
