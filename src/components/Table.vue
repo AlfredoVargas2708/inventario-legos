@@ -13,6 +13,7 @@ import type { DataTablePageEvent } from "primevue/datatable";
 import Button from "primevue/button";
 import Editar from "./Editar.vue";
 import { deletePedido, type PedidoRow } from "@/api/api.service";
+import { useToast } from "primevue/usetoast";
 
 const dataService = useDataSharingService();
 const { tableData, column, pagination, loading } = storeToRefs(dataService);
@@ -43,6 +44,8 @@ function onPage(event: DataTablePageEvent) {
 const editDialogVisible = ref(false);
 const selectedPedido = ref<PedidoRow | null>(null);
 
+const toast = useToast();
+
 function openEdit(row: PedidoRow) {
   selectedPedido.value = row;
   editDialogVisible.value = true;
@@ -51,6 +54,12 @@ function openEdit(row: PedidoRow) {
 function onPedidoUpdated() {
   editDialogVisible.value = false;
   selectedPedido.value = null;
+  toast.add({
+    severity: "success",
+    summary: "Elemento Editado",
+    detail: "Elemento editado correctamente. Revise la tabla",
+    life: 4000,
+  });
 }
 
 function confirmDelete(row: PedidoRow) {
@@ -75,6 +84,12 @@ function confirmDelete(row: PedidoRow) {
       const pageSize = pagination.value?.pageSize ?? 6;
       const isLastItemOnPage = data.value.length === 1 && page > 1;
       await dataService.fetchSearch(isLastItemOnPage ? page - 1 : page, pageSize);
+      toast.add({
+        severity: "success",
+        summary: "Elemento Eliminado",
+        detail: "Elemento eliminado correctamente. Revise la tabla",
+        life: 4000,
+      });
     },
   });
 }

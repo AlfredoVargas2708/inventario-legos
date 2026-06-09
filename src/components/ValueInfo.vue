@@ -8,6 +8,7 @@ import { useDataSharingService } from "@/api/data-sharing.service";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Agregar from "./Agregar.vue";
+import { useToast } from "primevue/usetoast";
 
 type InfoItem =
   | { label: string; type: "text"; value: string | number }
@@ -21,6 +22,7 @@ const isPieza = computed(() => column.value === "pieza");
 const dialogVisible = ref(false);
 
 const totalResults = computed(() => valueInfo.value?.pagination?.total ?? 0);
+const toast = useToast();
 
 const legoInfo = computed(() => {
   if (!isLego.value || !valueInfo.value) return null;
@@ -94,6 +96,12 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
 
 function onPedidoCreated() {
   dialogVisible.value = false;
+  toast.add({
+    severity: "success",
+    summary: "Elemento Creado",
+    detail: "Elemento creado correctamente. Revise la tabla",
+    life: 4000,
+  });
 }
 </script>
 
