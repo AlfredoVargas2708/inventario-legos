@@ -2,9 +2,11 @@
 import Header from "./components/Header.vue";
 import Table from "./components/Table.vue";
 import ValueInfo from "./components/ValueInfo.vue";
+import Toast from "primevue/toast";
 </script>
 
 <template>
+  <Toast />
   <div class="app-layout">
     <div class="app-container">
       <Header />

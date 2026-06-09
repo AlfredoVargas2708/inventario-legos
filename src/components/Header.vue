@@ -6,6 +6,7 @@ import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import { ref, type ComponentPublicInstance } from "vue";
 import { storeToRefs } from "pinia";
+import { useToast } from "primevue/usetoast";
 import { useDataSharingService } from "@/api/data-sharing.service";
 
 const selected = ref("");
@@ -17,14 +18,39 @@ const options = ref([
 const inputValue = ref("");
 const inputRef = ref<ComponentPublicInstance | null>(null);
 const dataService = useDataSharingService();
-const { loading } = storeToRefs(dataService);
+const { loading, pagination } = storeToRefs(dataService);
+const toast = useToast();
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 async function search() {
   if (!selected.value || !inputValue.value.trim()) return;
-  dataService.setSearchValue(inputValue.value);
-  await dataService.fetchSearch(1);
+
+  const query = inputValue.value.trim();
+  const typeLabel = selected.value === "lego" ? "Set" : "Pieza";
+
+  dataService.setColumn(selected.value);
+  dataService.setSearchValue(query);
+
+  try {
+    await dataService.fetchSearch(1, 6, { throwOnError: true });
+
+    if ((pagination.value?.total ?? 0) === 0) {
+      toast.add({
+        severity: "warn",
+        summary: "Sin resultados",
+        detail: `No se encontraron pedidos para el ${typeLabel} "${query}".`,
+        life: 4000,
+      });
+    }
+  } catch {
+    toast.add({
+      severity: "error",
+      summary: "No encontrado",
+      detail: `${typeLabel} "${query}" no existe o no se pudo consultar.`,
+      life: 4000,
+    });
+  }
 }
 
 function onInput() {

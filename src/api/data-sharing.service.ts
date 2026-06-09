@@ -22,7 +22,7 @@ export const useDataSharingService = defineStore("dataSharing", () => {
 
   let abortController: AbortController | null = null;
 
-  async function fetchSearch(page = 1, pageSize = 6) {
+  async function fetchSearch(page = 1, pageSize = 6, options?: { throwOnError?: boolean }) {
     if (!column.value || !searchValue.value.trim()) return;
 
     abortController?.abort();
@@ -42,7 +42,11 @@ export const useDataSharingService = defineStore("dataSharing", () => {
       valueInfo.value = results;
       pagination.value = results?.pagination ?? null;
     } catch (error) {
-      if (!axios.isCancel(error)) console.error(error);
+      if (!axios.isCancel(error)) {
+        console.error(error);
+        clearResults();
+        if (options?.throwOnError) throw error;
+      }
     } finally {
       loading.value = false;
     }
