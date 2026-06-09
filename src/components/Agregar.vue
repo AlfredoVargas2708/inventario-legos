@@ -7,8 +7,12 @@ import Select from "primevue/select";
 import Textarea from "primevue/textarea";
 import Button from "primevue/button";
 import Message from "primevue/message";
-import { createPedido, type PedidoPayload } from "@/api/api.service";
+import { createPedido, searchExistValue, type PedidoPayload } from "@/api/api.service";
 import { useDataSharingService } from "@/api/data-sharing.service";
+import axios from "axios";
+
+type FieldName = "lego" | "pieza";
+type FieldStatus = "idle" | "checking" | "valid" | "invalid";
 
 const props = defineProps<{
   visible: boolean;
@@ -21,6 +25,21 @@ const emit = defineEmits<{
 
 const dataService = useDataSharingService();
 const { column, searchValue, valueInfo } = storeToRefs(dataService);
+
+const fieldStatus = reactive<Record<FieldName, FieldStatus>>({
+  lego: "idle",
+  pieza: "idle",
+});
+
+const debounceTimers: Record<FieldName, ReturnType<typeof setTimeout> | null> = {
+  lego: null,
+  pieza: null,
+};
+
+const abortControllers: Record<FieldName, AbortController | null> = {
+  lego: null,
+  pieza: null,
+};
 
 const submitting = ref(false);
 const errorMessage = ref("");
@@ -42,6 +61,28 @@ const form = reactive({
   set_nombre: "",
 });
 
+function isFieldLocked(field: FieldName) {
+  return column.value === field;
+}
+
+function resetFieldStatuses() {
+  fieldStatus.lego = column.value === "lego" && form.lego.trim() ? "valid" : "idle";
+  fieldStatus.pieza = column.value === "pieza" && form.pieza.trim() ? "valid" : "idle";
+}
+
+function clearValidationState() {
+  (["lego", "pieza"] as FieldName[]).forEach((field) => {
+    if (debounceTimers[field]) {
+      clearTimeout(debounceTimers[field]!);
+      debounceTimers[field] = null;
+    }
+    abortControllers[field]?.abort();
+    abortControllers[field] = null;
+    fieldStatus[field] = "idle";
+  });
+  errorMessage.value = "";
+}
+
 function resetForm() {
   errorMessage.value = "";
   form.lego = column.value === "lego" ? searchValue.value : "";
@@ -53,15 +94,91 @@ function resetForm() {
   form.esta_reemplazado = "";
   form.comentarios = "";
   form.set_nombre = column.value === "lego" ? (valueInfo.value?.theme?.at(-1)?.name ?? "") : "";
+  resetFieldStatuses();
 }
 
 watch(
   () => props.visible,
   (visible) => {
-    if (visible) resetForm();
+    if (visible) {
+      resetForm();
+    } else {
+      clearValidationState();
+    }
   },
   { immediate: true },
 );
+
+function fieldHint(field: FieldName) {
+  if (isFieldLocked(field)) return "";
+
+  switch (fieldStatus[field]) {
+    case "checking":
+      return "Verificando...";
+    case "valid":
+      return field === "lego" ? "Set válido" : "Pieza válida";
+    case "invalid":
+      return field === "lego" ? "Set no encontrado" : "Pieza no encontrada";
+    default:
+      return "";
+  }
+}
+
+function fieldHintClass(field: FieldName) {
+  return {
+    "field-hint": true,
+    "field-hint--valid": fieldStatus[field] === "valid",
+    "field-hint--invalid": fieldStatus[field] === "invalid",
+    "field-hint--checking": fieldStatus[field] === "checking",
+  };
+}
+
+async function validateField(field: FieldName): Promise<boolean> {
+  const value = form[field].trim();
+
+  if (!value) {
+    fieldStatus[field] = "idle";
+    return false;
+  }
+
+  if (isFieldLocked(field)) {
+    fieldStatus[field] = "valid";
+    return true;
+  }
+
+  abortControllers[field]?.abort();
+  abortControllers[field] = new AbortController();
+  fieldStatus[field] = "checking";
+
+  try {
+    const exists = await searchExistValue(field, value, abortControllers[field]!.signal);
+    fieldStatus[field] = exists ? "valid" : "invalid";
+    return exists;
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      return fieldStatus[field] === "valid";
+    }
+    fieldStatus[field] = "invalid";
+    return false;
+  }
+}
+
+function onFieldInput(field: FieldName) {
+  if (isFieldLocked(field)) return;
+
+  if (debounceTimers[field]) clearTimeout(debounceTimers[field]);
+  debounceTimers[field] = setTimeout(() => {
+    void validateField(field);
+  }, 800);
+}
+
+async function ensureFieldsValid() {
+  const [legoOk, piezaOk] = await Promise.all([
+    validateField("lego"),
+    validateField("pieza"),
+  ]);
+  return legoOk && piezaOk;
+}
 
 function buildPayload(): PedidoPayload {
   return {
@@ -82,6 +199,12 @@ async function submit() {
 
   if (!form.lego.trim() || !form.pieza.trim() || !form.task.trim()) {
     errorMessage.value = "Lego, pieza y número de bolsa son obligatorios.";
+    return;
+  }
+
+  const fieldsValid = await ensureFieldsValid();
+  if (!fieldsValid) {
+    errorMessage.value = "Verifica que el Lego y la pieza existan en Rebrickable.";
     return;
   }
 
@@ -113,8 +236,13 @@ async function submit() {
           placeholder="Lego"
           class="w-full"
           :disabled="column === 'lego'"
+          :invalid="fieldStatus.lego === 'invalid'"
           required
+          @input="onFieldInput('lego')"
         />
+        <small v-if="fieldHint('lego')" :class="fieldHintClass('lego')">
+          {{ fieldHint("lego") }}
+        </small>
       </div>
 
       <div class="field">
@@ -125,8 +253,13 @@ async function submit() {
           placeholder="Pieza"
           class="w-full"
           :disabled="column === 'pieza'"
+          :invalid="fieldStatus.pieza === 'invalid'"
           required
+          @input="onFieldInput('pieza')"
         />
+        <small v-if="fieldHint('pieza')" :class="fieldHintClass('pieza')">
+          {{ fieldHint("pieza") }}
+        </small>
       </div>
 
       <div class="field">
@@ -218,7 +351,19 @@ async function submit() {
         :disabled="submitting"
         @click="emit('close')"
       />
-      <Button type="submit" label="Guardar pedido" icon="pi pi-check" :loading="submitting" />
+      <Button
+        type="submit"
+        label="Guardar pedido"
+        icon="pi pi-check"
+        :loading="submitting"
+        :disabled="
+          submitting ||
+          fieldStatus.lego === 'checking' ||
+          fieldStatus.pieza === 'checking' ||
+          fieldStatus.lego === 'invalid' ||
+          fieldStatus.pieza === 'invalid'
+        "
+      />
     </div>
   </form>
 </template>
@@ -255,6 +400,22 @@ async function submit() {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  color: var(--p-text-muted-color, #64748b);
+}
+
+.field-hint {
+  font-size: 0.75rem;
+}
+
+.field-hint--valid {
+  color: var(--p-green-600, #16a34a);
+}
+
+.field-hint--invalid {
+  color: var(--p-red-600, #dc2626);
+}
+
+.field-hint--checking {
   color: var(--p-text-muted-color, #64748b);
 }
 

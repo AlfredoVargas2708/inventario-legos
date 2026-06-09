@@ -43,6 +43,18 @@ export const searchValue = async (
   return response.data;
 };
 
+export const searchExistValue = async (
+  column: string,
+  value: string,
+  signal?: AbortSignal,
+): Promise<boolean> => {
+  const response = await axios.get<boolean>(
+    `${environment.apiUrl}/element-exist/${column}/${encodeURIComponent(value)}`,
+    { signal },
+  );
+  return response.data;
+};
+
 export const createPedido = async (data: PedidoPayload) => {
   const response = await axios.put(`${environment.apiUrl}/`, data);
   return response.data;
