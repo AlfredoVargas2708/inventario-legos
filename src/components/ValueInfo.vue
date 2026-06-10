@@ -6,9 +6,6 @@ import Tag from "primevue/tag";
 import DataView from "primevue/dataview";
 import { useDataSharingService } from "@/api/data-sharing.service";
 import Button from "primevue/button";
-import Dialog from "primevue/dialog";
-import Agregar from "./Agregar.vue";
-import { useToast } from "primevue/usetoast";
 
 type InfoItem =
   | { label: string; type: "text"; value: string | number }
@@ -22,7 +19,6 @@ const isPieza = computed(() => column.value === "pieza");
 const dialogVisible = ref(false);
 
 const totalResults = computed(() => valueInfo.value?.pagination?.total ?? 0);
-const toast = useToast();
 
 const legoInfo = computed(() => {
   if (!isLego.value || !valueInfo.value) return null;
@@ -93,16 +89,6 @@ const infoItems = computed((): InfoItem[] => {
 
 const displayImage = computed(() => legoInfo.value?.img ?? piezaInfo.value?.img ?? "");
 const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.title ?? "");
-
-function onPedidoCreated() {
-  dialogVisible.value = false;
-  toast.add({
-    severity: "success",
-    summary: "Elemento Creado",
-    detail: "Elemento creado correctamente. Revise la tabla",
-    life: 4000,
-  });
-}
 </script>
 
 <template>
@@ -123,22 +109,6 @@ function onPedidoCreated() {
             class="add-btn"
             @click="dialogVisible = true"
           />
-
-          <Dialog
-            v-model:visible="dialogVisible"
-            modal
-            header="Agregar pedido"
-            :style="{ width: '50vw' }"
-            :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-            :close-on-escape="true"
-            :dismissable-mask="true"
-          >
-            <Agregar
-              :visible="dialogVisible"
-              @close="dialogVisible = false"
-              @success="onPedidoCreated"
-            />
-          </Dialog>
         </div>
 
         <DataView :value="infoItems" layout="list" class="info-body">
