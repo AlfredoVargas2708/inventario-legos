@@ -55,8 +55,17 @@ export const searchExistValue = async (
   return response.data;
 };
 
-export const getInventario = async (column: string, value: string): Promise<any> => {
-  const response = await axios.get(`${environment.apiUrl}/inventory/${column}/${value}`);
+export const getInventario = async (
+  column: string,
+  value: string,
+  page: number,
+  pageSize: number,
+  signal?: AbortSignal,
+): Promise<any> => {
+  const response = await axios.get(
+    `${environment.apiUrl}/inventory/${column}/${encodeURIComponent(value)}?page=${page}&limit=${pageSize}`,
+    { signal },
+  );
   return response.data;
 };
 

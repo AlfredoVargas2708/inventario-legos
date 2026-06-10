@@ -5,45 +5,51 @@ import Card from "primevue/card";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import type { DataTablePageEvent } from "primevue/datatable";
-import { useDataSharingService } from "@/api/data-sharing.service";
+import { useDataSharingService, type PaginationInfo } from "@/api/data-sharing.service";
 import { getInventario } from "@/api/api.service";
 
 const { column, searchValue, valueInfo } = storeToRefs(useDataSharingService());
 
 const inventoryData = ref<Record<string, unknown>[]>([]);
+const pagination = ref<PaginationInfo | null>(null);
 const loading = ref(false);
-const first = ref(0);
-const rows = ref(6);
 
 const hasSearch = computed(() => valueInfo.value != null);
+const rows = computed(() => pagination.value?.pageSize ?? 6);
+const totalRecords = computed(() => pagination.value?.total ?? 0);
+const first = computed(() => {
+  const page = pagination.value?.page ?? 1;
+  return (page - 1) * rows.value;
+});
 
 function onPage(event: DataTablePageEvent) {
-  first.value = event.first;
-  rows.value = event.rows;
+  fetchInventory(event.page + 1, event.rows);
 }
 
-async function fetchInventory() {
+async function fetchInventory(page = 1, pageSize = pagination.value?.pageSize ?? 6) {
   if (!column.value || !searchValue.value.trim()) {
     inventoryData.value = [];
-    first.value = 0;
+    pagination.value = null;
     return;
   }
 
   loading.value = true;
   try {
-    const results = await getInventario(column.value, searchValue.value.trim());
-    inventoryData.value = results?.inventario ?? [];
-    first.value = 0;
+    const results = await getInventario(column.value, searchValue.value.trim(), page, pageSize);
+    inventoryData.value = results?.inventario?.results ?? [];
+    pagination.value = results?.inventario?.pagination ?? null;
   } catch (error) {
     console.error(error);
     inventoryData.value = [];
-    first.value = 0;
+    pagination.value = null;
   } finally {
     loading.value = false;
   }
 }
 
-watch([column, searchValue], fetchInventory, { immediate: true });
+watch([column, searchValue], () => fetchInventory(1, pagination.value?.pageSize ?? 6), {
+  immediate: true,
+});
 
 const getValue = (row: any, legoGetter: (row: any) => any, setGetter: (row: any) => any) => {
   return column.value === "lego" ? legoGetter(row) : setGetter(row);
@@ -67,11 +73,13 @@ function getExternalIdEntries(externalIds: unknown) {
     </template>
     <template #content>
       <DataTable
-        v-model:first="first"
         :value="inventoryData"
-        :rows="rows"
-        :loading="loading"
+        lazy
         paginator
+        :rows="rows"
+        :total-records="totalRecords"
+        :first="first"
+        :loading="loading"
         :rows-per-page-options="[3, 6, 9, 12, 15, 18, 20]"
         current-page-report-template="{first}–{last} de {totalRecords}"
         template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
