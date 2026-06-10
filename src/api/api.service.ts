@@ -55,15 +55,28 @@ export const searchExistValue = async (
   return response.data;
 };
 
+export type InventoryFilters = Record<string, string>;
+
 export const getInventario = async (
   column: string,
   value: string,
   page: number,
   pageSize: number,
+  filters: InventoryFilters = {},
   signal?: AbortSignal,
 ): Promise<any> => {
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(pageSize),
+  });
+
+  for (const [key, filterValue] of Object.entries(filters)) {
+    const trimmed = filterValue.trim();
+    if (trimmed) params.set(key, trimmed);
+  }
+
   const response = await axios.get(
-    `${environment.apiUrl}/inventory/${column}/${encodeURIComponent(value)}?page=${page}&limit=${pageSize}`,
+    `${environment.apiUrl}/inventory/${column}/${encodeURIComponent(value)}?${params.toString()}`,
     { signal },
   );
   return response.data;

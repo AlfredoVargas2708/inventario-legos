@@ -6,13 +6,44 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import type { DataTablePageEvent } from "primevue/datatable";
 import { useDataSharingService, type PaginationInfo } from "@/api/data-sharing.service";
-import { getInventario } from "@/api/api.service";
+import { getInventario, type InventoryFilters } from "@/api/api.service";
+import Button from "primevue/button";
+import Select from "primevue/select";
+import InputText from "primevue/inputtext";
 
 const { column, searchValue, valueInfo } = storeToRefs(useDataSharingService());
 
 const inventoryData = ref<Record<string, unknown>[]>([]);
 const pagination = ref<PaginationInfo | null>(null);
 const loading = ref(false);
+const filterField = ref("");
+const filterValue = ref("");
+
+let filterDebounce: ReturnType<typeof setTimeout> | null = null;
+
+const legoFilterOptions = [
+  { label: "Código", value: "element_id" },
+  { label: "Nombre", value: "part.name" },
+  { label: "Color", value: "color.name" },
+  { label: "Cantidad", value: "quantity" },
+  { label: "Nº pieza", value: "part.part_num" },
+];
+
+const piezaFilterOptions = [
+  { label: "Código", value: "set_num" },
+  { label: "Nombre", value: "name" },
+  { label: "Piezas", value: "num_parts" },
+  { label: "Tema", value: "theme.name" },
+  { label: "Año", value: "year" },
+];
+
+const filterOptions = computed(() =>
+  column.value === "lego" ? legoFilterOptions : piezaFilterOptions,
+);
+
+const hasActiveFilter = computed(
+  () => Boolean(filterField.value && filterValue.value.trim()),
+);
 
 const hasSearch = computed(() => valueInfo.value != null);
 const rows = computed(() => pagination.value?.pageSize ?? 6);
@@ -26,6 +57,33 @@ function onPage(event: DataTablePageEvent) {
   fetchInventory(event.page + 1, event.rows);
 }
 
+function buildFilters(): InventoryFilters {
+  const field = filterField.value;
+  const value = filterValue.value.trim();
+  if (!field || !value) return {};
+  return { [field]: value };
+}
+
+function clearFilter() {
+  filterField.value = "";
+  filterValue.value = "";
+  fetchInventory(1, pagination.value?.pageSize ?? 6);
+}
+
+function onFilterInput() {
+  if (filterDebounce) clearTimeout(filterDebounce);
+  filterDebounce = setTimeout(() => {
+    if (!filterField.value) return;
+    fetchInventory(1, pagination.value?.pageSize ?? 6);
+  }, 500);
+}
+
+function onFilterFieldChange() {
+  if (!filterField.value || filterValue.value.trim()) {
+    fetchInventory(1, pagination.value?.pageSize ?? 6);
+  }
+}
+
 async function fetchInventory(page = 1, pageSize = pagination.value?.pageSize ?? 6) {
   if (!column.value || !searchValue.value.trim()) {
     inventoryData.value = [];
@@ -35,7 +93,13 @@ async function fetchInventory(page = 1, pageSize = pagination.value?.pageSize ??
 
   loading.value = true;
   try {
-    const results = await getInventario(column.value, searchValue.value.trim(), page, pageSize);
+    const results = await getInventario(
+      column.value,
+      searchValue.value.trim(),
+      page,
+      pageSize,
+      buildFilters(),
+    );
     inventoryData.value = results?.inventario?.results ?? [];
     pagination.value = results?.inventario?.pagination ?? null;
   } catch (error) {
@@ -47,9 +111,11 @@ async function fetchInventory(page = 1, pageSize = pagination.value?.pageSize ??
   }
 }
 
-watch([column, searchValue], () => fetchInventory(1, pagination.value?.pageSize ?? 6), {
-  immediate: true,
-});
+watch([column, searchValue], () => {
+  filterField.value = "";
+  filterValue.value = "";
+  fetchInventory(1, pagination.value?.pageSize ?? 6);
+}, { immediate: true });
 
 const getValue = (row: any, legoGetter: (row: any) => any, setGetter: (row: any) => any) => {
   return column.value === "lego" ? legoGetter(row) : setGetter(row);
@@ -64,6 +130,10 @@ function getExternalIdEntries(externalIds: unknown) {
     .filter(([, ids]) => Array.isArray(ids) && ids.length > 0)
     .map(([platform, ids]) => ({ platform, ids: ids.join(", ") }));
 }
+
+function agregarElemento(row: any) {
+  console.log(row);
+}
 </script>
 
 <template>
@@ -72,6 +142,43 @@ function getExternalIdEntries(externalIds: unknown) {
       <span class="table-card-title">Inventario</span>
     </template>
     <template #content>
+      <div class="filter-bar">
+        <div class="filter-field filter-field--column">
+          <label for="inventory-filter-field" class="field-label">Filtrar por</label>
+          <Select
+            id="inventory-filter-field"
+            v-model="filterField"
+            :options="filterOptions"
+            placeholder="Columna"
+            option-label="label"
+            option-value="value"
+            show-clear
+            class="w-full"
+            @change="onFilterFieldChange"
+          />
+        </div>
+        <div class="filter-field filter-field--value">
+          <label for="inventory-filter-value" class="field-label">Valor</label>
+          <InputText
+            id="inventory-filter-value"
+            v-model="filterValue"
+            placeholder="Texto a buscar"
+            :disabled="!filterField"
+            class="w-full"
+            @input="onFilterInput"
+          />
+        </div>
+        <Button
+          v-if="hasActiveFilter"
+          label="Limpiar"
+          icon="pi pi-times"
+          severity="secondary"
+          outlined
+          size="small"
+          class="filter-clear-btn"
+          @click="clearFilter"
+        />
+      </div>
       <DataTable
         :value="inventoryData"
         lazy
@@ -199,6 +306,22 @@ function getExternalIdEntries(externalIds: unknown) {
             <span v-else class="external-ids-empty">—</span>
           </template>
         </Column>
+        <Column header="Acciones" header-class="col-actions" body-class="col-actions">
+          <template #body="{ data: row }">
+            <div class="action-group">
+              <Button
+                icon="pi pi-plus-circle"
+                outlined
+                rounded
+                size="small"
+                aria-label="Agregar"
+                title="Agregar"
+                class="action-btn action-btn--add"
+                @click="agregarElemento(row)"
+              />
+            </div>
+          </template>
+        </Column>
         <template #empty>
           <p class="empty-message">No hay elementos en inventario para esta búsqueda.</p>
         </template>
@@ -224,6 +347,47 @@ function getExternalIdEntries(externalIds: unknown) {
 .table-card-title {
   font-size: 1.125rem;
   font-weight: 600;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  padding: 0 0 1rem;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.filter-field--column {
+  flex: 0 0 100%;
+}
+
+.filter-field--value {
+  flex: 1 1 12rem;
+}
+
+.field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--p-text-muted-color, #64748b);
+}
+
+.filter-clear-btn {
+  margin-bottom: 0.125rem;
+}
+
+@media (min-width: 576px) {
+  .filter-field--column {
+    flex: 0 0 12rem;
+  }
 }
 
 .inventory-table :deep(.p-datatable-thead > tr > th) {
@@ -335,5 +499,29 @@ function getExternalIdEntries(externalIds: unknown) {
 
 .external-ids-empty {
   color: var(--p-text-muted-color, #64748b);
+}
+.action-group {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.action-btn :deep(.p-button) {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.action-btn :deep(.p-button:not(:disabled):hover) {
+  transform: scale(1.08);
+}
+
+.action-btn--add :deep(.p-button:not(:disabled):hover) {
+  background: var(--p-blue-50, #eff6ff);
 }
 </style>
