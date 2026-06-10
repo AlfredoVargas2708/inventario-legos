@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import Card from "primevue/card";
 import Tag from "primevue/tag";
 import DataView from "primevue/dataview";
@@ -12,11 +12,12 @@ type InfoItem =
   | { label: string; type: "tag"; value: string; severity: "secondary" | "info" }
   | { label: string; type: "color"; value: string; rgb: string };
 
-const { column, valueInfo } = storeToRefs(useDataSharingService());
+const { column, valueInfo, buscar } = storeToRefs(useDataSharingService());
 
 const isLego = computed(() => column.value === "lego");
 const isPieza = computed(() => column.value === "pieza");
-const dialogVisible = ref(false);
+
+const datosService = useDataSharingService();
 
 const totalResults = computed(() => valueInfo.value?.pagination?.total ?? 0);
 
@@ -87,6 +88,10 @@ const infoItems = computed((): InfoItem[] => {
   return [];
 });
 
+function toggleVista() {
+  datosService.setBuscar(!buscar.value);
+}
+
 const displayImage = computed(() => legoInfo.value?.img ?? piezaInfo.value?.img ?? "");
 const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.title ?? "");
 </script>
@@ -101,13 +106,13 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
           </div>
 
           <Button
-            label="Agregar"
-            icon="pi pi-plus"
+            :label="buscar ? 'Pedidos' : 'Inventario'"
+            :icon="buscar ? 'pi pi-list' : 'pi pi-box'"
             size="small"
             severity="success"
             outlined
             class="add-btn"
-            @click="dialogVisible = true"
+            @click="toggleVista"
           />
         </div>
 

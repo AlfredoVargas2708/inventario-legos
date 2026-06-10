@@ -295,6 +295,10 @@ function confirmDelete(row: PedidoRow) {
   padding-top: 0;
 }
 
+.table-card :deep(.p-card-title) {
+  padding: 1.25rem 1.25rem 0.75rem;
+}
+
 .table-card-title {
   font-size: 1.125rem;
   font-weight: 600;

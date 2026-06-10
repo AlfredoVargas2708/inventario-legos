@@ -55,6 +55,11 @@ export const searchExistValue = async (
   return response.data;
 };
 
+export const getInventario = async (column: string, value: string): Promise<any> => {
+  const response = await axios.get(`${environment.apiUrl}/inventory/${column}/${value}`);
+  return response.data;
+};
+
 export const createPedido = async (data: PedidoPayload) => {
   const response = await axios.put(`${environment.apiUrl}/`, data);
   return response.data;

@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import Header from "./components/Header.vue";
 import Table from "./components/Table.vue";
+import TableInventory from "./components/TableInventory.vue";
 import ValueInfo from "./components/ValueInfo.vue";
 import Toast from "primevue/toast";
+import { storeToRefs } from "pinia";
+import { useDataSharingService } from "@/api/data-sharing.service";
+
+const { buscar } = storeToRefs(useDataSharingService());
 </script>
 
 <template>
@@ -12,7 +17,8 @@ import Toast from "primevue/toast";
       <Header />
       <main class="app-main">
         <ValueInfo />
-        <Table />
+        <Table v-if="!buscar" />
+        <TableInventory v-else />
       </main>
     </div>
   </div>
