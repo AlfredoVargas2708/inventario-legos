@@ -29,6 +29,24 @@ export interface PedidoRow {
   rebrickData?: unknown;
 }
 
+export interface InstructionManual {
+  numero: number;
+  total: number;
+  url: string;
+  etiqueta: string;
+}
+
+export interface InstructionBooklet {
+  url: string;
+  idioma: string;
+  etiqueta: string;
+}
+
+export interface Instrucciones {
+  manuales: InstructionManual[];
+  folleto?: InstructionBooklet;
+}
+
 export const searchValue = async (
   column: string,
   value: string,

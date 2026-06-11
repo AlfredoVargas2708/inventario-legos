@@ -6,7 +6,9 @@ import Card from "primevue/card";
 import Tag from "primevue/tag";
 import DataView from "primevue/dataview";
 import Button from "primevue/button";
+import type { Instrucciones } from "@/api/api.service";
 import { useDataSharingService } from "@/api/data-sharing.service";
+import LegoInstructions from "@/components/info/LegoInstructions.vue";
 
 type InfoItem =
   | { label: string; type: "text"; value: string | number }
@@ -22,6 +24,10 @@ const isLego = computed(() => column.value === "lego");
 const isPieza = computed(() => column.value === "pieza");
 
 const totalResults = computed(() => valueInfo.value?.pagination?.total ?? 0);
+
+const instrucciones = computed<Instrucciones | undefined>(
+  () => (isLego.value ? valueInfo.value?.instrucciones : undefined),
+);
 
 const legoInfo = computed(() => {
   if (!isLego.value || !valueInfo.value) return null;
@@ -116,6 +122,8 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
             class="add-btn"
             @click="toggleVista"
           />
+
+          <LegoInstructions v-if="isLego" :instrucciones="instrucciones" />
         </div>
 
         <DataView :value="infoItems" layout="list" class="info-body">
@@ -310,8 +318,10 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
     height: 7.5rem;
   }
 
-  .add-btn {
+  .add-btn,
+  .info-sidebar :deep(.instructions-section) {
     flex: 1;
+    min-width: 8rem;
   }
 }
 </style>

@@ -16,6 +16,8 @@ import { getValueByColumn, yesNoSeverity } from "@/utils/lego-helpers";
 import TableCard from "@/components/common/TableCard.vue";
 import ServerDataTable from "@/components/common/ServerDataTable.vue";
 import EditarPedido from "@/components/pedidos/EditarPedido.vue";
+import LegoInstructions from "@/components/info/LegoInstructions.vue";
+import { getPedidoInstrucciones } from "@/utils/instructions";
 
 const dataService = useDataSharingService();
 const { tableData, column, pagination, loading } = storeToRefs(dataService);
@@ -213,11 +215,17 @@ function confirmDelete(row: PedidoRow) {
           </template>
         </Column>
 
-        <Column header="Acciones" header-class="col-actions" body-class="col-actions">
-          <template #body="{ data: row }">
-            <div class="action-group">
-              <Button
-                icon="pi pi-pencil"
+          <Column header="Acciones" header-class="col-actions" body-class="col-actions">
+            <template #body="{ data: row }">
+              <div class="action-group">
+                <LegoInstructions
+                  v-if="column === 'pieza'"
+                  variant="icon"
+                  :instrucciones="getPedidoInstrucciones(row)"
+                  :set-label="String(row.lego ?? row.rebrickData?.name ?? '')"
+                />
+                <Button
+                  icon="pi pi-pencil"
                 severity="info"
                 outlined
                 rounded

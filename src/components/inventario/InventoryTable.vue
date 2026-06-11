@@ -12,6 +12,8 @@ import TableCard from "@/components/common/TableCard.vue";
 import FilterBar from "@/components/common/FilterBar.vue";
 import ServerDataTable from "@/components/common/ServerDataTable.vue";
 import AgregarPedido from "@/components/inventario/AgregarPedido.vue";
+import LegoInstructions from "@/components/info/LegoInstructions.vue";
+import { getInventoryInstrucciones } from "@/utils/instructions";
 
 const { column, searchValue, valueInfo } = storeToRefs(useDataSharingService());
 const toast = useToast();
@@ -228,6 +230,12 @@ function onPedidoCreated() {
       <Column header="Acciones" header-class="col-actions" body-class="col-actions">
         <template #body="{ data: row }">
           <div class="action-group">
+            <LegoInstructions
+              v-if="column === 'pieza'"
+              variant="icon"
+              :instrucciones="getInventoryInstrucciones(row)"
+              :set-label="String(row.name ?? row.set_num ?? '')"
+            />
             <Button
               icon="pi pi-plus-circle"
               outlined
