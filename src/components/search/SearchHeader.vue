@@ -6,20 +6,18 @@ import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import { ref, type ComponentPublicInstance } from "vue";
 import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
 import { useToast } from "primevue/usetoast";
 import { useDataSharingService } from "@/api/data-sharing.service";
+import { SEARCH_TYPE_OPTIONS } from "@/constants/search";
 
 const selected = ref("");
-const options = ref([
-  { label: "Lego", value: "lego" },
-  { label: "Pieza", value: "pieza" },
-]);
-
 const inputValue = ref("");
 const inputRef = ref<ComponentPublicInstance | null>(null);
 const dataService = useDataSharingService();
 const { loading, pagination } = storeToRefs(dataService);
 const toast = useToast();
+const router = useRouter();
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -34,6 +32,7 @@ async function search() {
 
   try {
     await dataService.fetchSearch(1, 6, { throwOnError: true });
+    await router.push({ name: "pedidos" });
 
     if ((pagination.value?.total ?? 0) === 0) {
       toast.add({
@@ -83,7 +82,7 @@ function onSelect() {
         <Select
           id="search-type"
           v-model="selected"
-          :options="options"
+          :options="SEARCH_TYPE_OPTIONS"
           placeholder="Elige una opción"
           option-label="label"
           option-value="value"

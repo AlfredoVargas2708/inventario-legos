@@ -1,23 +1,25 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import Card from "primevue/card";
 import Tag from "primevue/tag";
 import DataView from "primevue/dataview";
-import { useDataSharingService } from "@/api/data-sharing.service";
 import Button from "primevue/button";
+import { useDataSharingService } from "@/api/data-sharing.service";
 
 type InfoItem =
   | { label: string; type: "text"; value: string | number }
   | { label: string; type: "tag"; value: string; severity: "secondary" | "info" }
   | { label: string; type: "color"; value: string; rgb: string };
 
-const { column, valueInfo, buscar } = storeToRefs(useDataSharingService());
+const { column, valueInfo } = storeToRefs(useDataSharingService());
+const route = useRoute();
+const router = useRouter();
 
+const isInventario = computed(() => route.name === "inventario");
 const isLego = computed(() => column.value === "lego");
 const isPieza = computed(() => column.value === "pieza");
-
-const datosService = useDataSharingService();
 
 const totalResults = computed(() => valueInfo.value?.pagination?.total ?? 0);
 
@@ -89,7 +91,7 @@ const infoItems = computed((): InfoItem[] => {
 });
 
 function toggleVista() {
-  datosService.setBuscar(!buscar.value);
+  router.push({ name: isInventario.value ? "pedidos" : "inventario" });
 }
 
 const displayImage = computed(() => legoInfo.value?.img ?? piezaInfo.value?.img ?? "");
@@ -106,8 +108,8 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
           </div>
 
           <Button
-            :label="buscar ? 'Pedidos' : 'Inventario'"
-            :icon="buscar ? 'pi pi-list' : 'pi pi-box'"
+            :label="isInventario ? 'Pedidos' : 'Inventario'"
+            :icon="isInventario ? 'pi pi-list' : 'pi pi-box'"
             size="small"
             severity="success"
             outlined

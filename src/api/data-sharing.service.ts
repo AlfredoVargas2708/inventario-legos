@@ -19,7 +19,6 @@ export const useDataSharingService = defineStore("dataSharing", () => {
   const valueInfo = ref<any>();
   const pagination = ref<PaginationInfo | null>(null);
   const loading = ref(false);
-  const buscar = ref(false);
 
   let abortController: AbortController | null = null;
 
@@ -73,14 +72,6 @@ export const useDataSharingService = defineStore("dataSharing", () => {
     await fetchSearch(page, pageSize);
   }
 
-  function setBuscar(buscarValue: boolean) {
-    buscar.value = buscarValue;
-  }
-
-  function getBuscar() {
-    return buscar.value;
-  }
-
   return {
     column,
     searchValue,
@@ -88,13 +79,10 @@ export const useDataSharingService = defineStore("dataSharing", () => {
     valueInfo,
     pagination,
     loading,
-    buscar,
     setColumn,
     setSearchValue,
     fetchSearch,
     refreshResults,
     clearResults,
-    setBuscar,
-    getBuscar,
   };
 });

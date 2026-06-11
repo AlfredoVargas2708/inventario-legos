@@ -57,12 +57,18 @@ export const searchExistValue = async (
 
 export type InventoryFilters = Record<string, string>;
 
+export interface InventorySort {
+  sortBy: string;
+  sortOrder: "asc" | "desc";
+}
+
 export const getInventario = async (
   column: string,
   value: string,
   page: number,
   pageSize: number,
   filters: InventoryFilters = {},
+  sort?: InventorySort | null,
   signal?: AbortSignal,
 ): Promise<any> => {
   const params = new URLSearchParams({
@@ -73,6 +79,11 @@ export const getInventario = async (
   for (const [key, filterValue] of Object.entries(filters)) {
     const trimmed = filterValue.trim();
     if (trimmed) params.set(key, trimmed);
+  }
+
+  if (sort?.sortBy) {
+    params.set("sortBy", sort.sortBy);
+    params.set("sortOrder", sort.sortOrder);
   }
 
   const response = await axios.get(

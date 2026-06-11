@@ -1,70 +1,70 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue'
-import InputText from 'primevue/inputtext'
-import InputNumber from 'primevue/inputnumber'
-import Select from 'primevue/select'
-import Textarea from 'primevue/textarea'
-import Button from 'primevue/button'
-import Message from 'primevue/message'
+import { reactive, ref, watch } from "vue";
+import InputText from "primevue/inputtext";
+import InputNumber from "primevue/inputnumber";
+import Select from "primevue/select";
+import Textarea from "primevue/textarea";
+import Button from "primevue/button";
+import Message from "primevue/message";
 import {
   updatePedido,
   type PedidoRow,
   type PedidoUpdatePayload,
-} from '@/api/api.service'
-import { useDataSharingService } from '@/api/data-sharing.service'
+} from "@/api/api.service";
+import { useDataSharingService } from "@/api/data-sharing.service";
 
 const props = defineProps<{
-  visible: boolean
-  pedido: PedidoRow | null
-}>()
+  visible: boolean;
+  pedido: PedidoRow | null;
+}>();
 
 const emit = defineEmits<{
-  close: []
-  success: []
-}>()
+  close: [];
+  success: [];
+}>();
 
-const dataService = useDataSharingService()
+const dataService = useDataSharingService();
 
-const submitting = ref(false)
-const errorMessage = ref('')
+const submitting = ref(false);
+const errorMessage = ref("");
 
 const siNoOptions = [
-  { label: 'Sí', value: 'Si' },
-  { label: 'No', value: 'No' },
-]
+  { label: "Sí", value: "Si" },
+  { label: "No", value: "No" },
+];
 
 const form = reactive({
-  lego: '',
-  pieza: '',
+  lego: "",
+  pieza: "",
   cantidad: 1,
-  task: '',
-  esta_pedido: 'No',
-  esta_completo: 'No',
-  esta_reemplazado: '',
-  comentarios: '',
-})
+  task: "",
+  esta_pedido: "No",
+  esta_completo: "No",
+  esta_reemplazado: "",
+  comentarios: "",
+});
 
 function loadForm() {
-  errorMessage.value = ''
-  if (!props.pedido) return
+  errorMessage.value = "";
+  if (!props.pedido) return;
 
-  form.lego = props.pedido.lego ?? ''
-  form.pieza = props.pedido.pieza ?? ''
-  form.cantidad = Number(props.pedido.cantidad) || 1
-  form.task = props.pedido.task ?? ''
-  form.esta_pedido = props.pedido.esta_pedido ?? 'No'
-  form.esta_completo = props.pedido.esta_completo ?? 'No'
-  form.esta_reemplazado = props.pedido.esta_reemplazado ?? ''
-  form.comentarios = props.pedido.comentarios ?? ''
+  form.lego = props.pedido.lego ?? "";
+  form.pieza = props.pedido.pieza ?? "";
+  form.cantidad = Number(props.pedido.cantidad) || 1;
+  form.task = props.pedido.task ?? "";
+  form.esta_pedido = props.pedido.esta_pedido ?? "No";
+  form.esta_completo = props.pedido.esta_completo ?? "No";
+  form.esta_reemplazado = props.pedido.esta_reemplazado ?? "";
+  form.comentarios = props.pedido.comentarios ?? "";
 }
 
 watch(
   () => [props.visible, props.pedido] as const,
   ([visible]) => {
-    if (visible) loadForm()
+    if (visible) loadForm();
   },
   { immediate: true },
-)
+);
 
 function buildPayload(): PedidoUpdatePayload {
   return {
@@ -76,31 +76,31 @@ function buildPayload(): PedidoUpdatePayload {
     esta_completo: form.esta_completo,
     esta_reemplazado: form.esta_reemplazado.trim() || null,
     comentarios: form.comentarios.trim() || null,
-  }
+  };
 }
 
 async function submit() {
-  errorMessage.value = ''
+  errorMessage.value = "";
 
   if (!props.pedido?.id) {
-    errorMessage.value = 'No se encontró el pedido a editar.'
-    return
+    errorMessage.value = "No se encontró el pedido a editar.";
+    return;
   }
 
   if (!form.lego.trim() || !form.pieza.trim() || !form.task.trim()) {
-    errorMessage.value = 'Lego, pieza y número de bolsa son obligatorios.'
-    return
+    errorMessage.value = "Lego, pieza y número de bolsa son obligatorios.";
+    return;
   }
 
-  submitting.value = true
+  submitting.value = true;
   try {
-    await updatePedido(props.pedido.id, buildPayload())
-    await dataService.refreshResults()
-    emit('success')
+    await updatePedido(props.pedido.id, buildPayload());
+    await dataService.refreshResults();
+    emit("success");
   } catch {
-    errorMessage.value = 'No se pudo actualizar el pedido. Intenta de nuevo.'
+    errorMessage.value = "No se pudo actualizar el pedido. Intenta de nuevo.";
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 </script>

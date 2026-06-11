@@ -1,0 +1,123 @@
+.table-card {
+  border: 1px solid var(--p-content-border-color, #e2e8f0);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+}
+
+.table-card :deep(.p-card-body) {
+  padding-top: 0;
+}
+
+.table-card :deep(.p-card-title) {
+  padding: 1.25rem 1.25rem 0.75rem;
+}
+
+.table-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--p-text-muted-color, #64748b);
+}
+
+.inventory-table :deep(.p-datatable-thead > tr > th) {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.inventory-table :deep(.p-datatable-tbody > tr > td) {
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
+
+.inventory-table :deep(.p-paginator) {
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding: 0.75rem 0.5rem;
+  border: none;
+  border-top: 1px solid var(--p-content-border-color, #e2e8f0);
+  background: var(--p-surface-50, #f8fafc);
+}
+
+.inventory-table :deep(.p-paginator-page),
+.inventory-table :deep(.p-paginator-first),
+.inventory-table :deep(.p-paginator-prev),
+.inventory-table :deep(.p-paginator-next),
+.inventory-table :deep(.p-paginator-last) {
+  min-width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.inventory-table :deep(.p-paginator-current) {
+  font-size: 0.8125rem;
+  color: var(--p-text-muted-color, #64748b);
+  font-weight: 500;
+}
+
+.inventory-table :deep(.p-select) {
+  border-radius: 8px;
+  font-size: 0.8125rem;
+}
+
+.imagen-table {
+  width: 3.5rem;
+  height: 3.5rem;
+  object-fit: contain;
+  border-radius: 6px;
+  background: var(--p-surface-50, #f8fafc);
+}
+
+.cell-code {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-name {
+  display: block;
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-group {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.action-btn :deep(.p-button) {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.action-btn :deep(.p-button:not(:disabled):hover) {
+  transform: scale(1.08);
+}
+
+.empty-message {
+  margin: 0;
+  padding: 1rem 0;
+  text-align: center;
+  color: var(--p-text-muted-color, #64748b);
+  font-size: 0.875rem;
+}
