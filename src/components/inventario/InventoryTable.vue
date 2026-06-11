@@ -1,16 +1,28 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import Column from "primevue/column";
 import Button from "primevue/button";
+import Dialog from "primevue/dialog";
+import { useToast } from "primevue/usetoast";
 import { useDataSharingService } from "@/api/data-sharing.service";
 import { useInventoryTable } from "@/composables/useInventoryTable";
 import { getValueByColumn, getExternalIdEntries } from "@/utils/lego-helpers";
 import TableCard from "@/components/common/TableCard.vue";
 import FilterBar from "@/components/common/FilterBar.vue";
 import ServerDataTable from "@/components/common/ServerDataTable.vue";
+import AgregarPedido from "@/components/inventario/AgregarPedido.vue";
 
 const { column, searchValue, valueInfo } = storeToRefs(useDataSharingService());
+const toast = useToast();
+
+const addDialogVisible = ref(false);
+const selectedItem = ref<Record<string, unknown> | null>(null);
+
+const setNombre = computed(() => {
+  if (column.value === "lego") return valueInfo.value?.name ?? "";
+  return "";
+});
 
 const hasSearch = computed(() => valueInfo.value != null);
 
@@ -44,8 +56,20 @@ function getValue<T>(row: T, legoGetter: (row: T) => unknown, piezaGetter: (row:
   return getValueByColumn(column.value, row, legoGetter, piezaGetter);
 }
 
-function agregarElemento(row: unknown) {
-  console.log(row);
+function agregarElemento(row: Record<string, unknown>) {
+  selectedItem.value = row;
+  addDialogVisible.value = true;
+}
+
+function onPedidoCreated() {
+  addDialogVisible.value = false;
+  selectedItem.value = null;
+  toast.add({
+    severity: "success",
+    summary: "Pedido creado",
+    detail: "El pedido se agregó correctamente. Revísalo en la vista de pedidos.",
+    life: 4000,
+  });
 }
 </script>
 
@@ -222,6 +246,26 @@ function agregarElemento(row: unknown) {
         <p class="empty-message">No hay elementos en inventario para esta búsqueda.</p>
       </template>
     </ServerDataTable>
+
+    <Dialog
+      v-model:visible="addDialogVisible"
+      modal
+      header="Agregar pedido"
+      :style="{ width: '50vw' }"
+      :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+      :close-on-escape="true"
+      :dismissable-mask="true"
+    >
+      <AgregarPedido
+        :visible="addDialogVisible"
+        :item="selectedItem"
+        :search-column="column"
+        :search-value="searchValue"
+        :set-nombre="setNombre"
+        @close="addDialogVisible = false"
+        @success="onPedidoCreated"
+      />
+    </Dialog>
   </TableCard>
 </template>
 
