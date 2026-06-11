@@ -42,10 +42,7 @@ const {
   first,
   fetchInventory,
   initializeInventory,
-  resetQueryState,
-  colorFilterOptions,
-  colorFilterField,
-  colorsLoading,
+  catalogFilter,
   onPage,
   onSort,
   clearFilter,
@@ -87,9 +84,7 @@ function onPedidoCreated() {
       :filter-value="filterValue"
       :options="filterOptions"
       :has-active-filter="hasActiveFilter"
-      :color-options="colorFilterOptions"
-      :color-filter-field="colorFilterField"
-      :colors-loading="colorsLoading"
+      :catalog-filter="catalogFilter"
       field-id="inventory-filter-field"
       value-id="inventory-filter-value"
       @update:filter-field="filterField = $event"
@@ -110,14 +105,10 @@ function onPedidoCreated() {
       :sort-order="sortOrder"
       @page="onPage"
       @sort="onSort"
+      paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
+      currentPageReportTemplate="{first} to {last} of {totalRecords}"
     >
-      <Column
-        v-if="column === 'pieza'"
-        field="set_num"
-        header="Código"
-        sortable
-        frozen
-      >
+      <Column v-if="column === 'pieza'" field="set_num" header="Código" sortable frozen>
         <template #body="{ data: row }">
           <span class="cell-code">{{ row.set_num }}</span>
         </template>
@@ -175,12 +166,7 @@ function onPedidoCreated() {
           {{ row.color.name }}
         </template>
       </Column>
-      <Column
-        v-else
-        header="Piezas"
-        header-class="col-optional"
-        body-class="col-optional"
-      >
+      <Column v-else header="Piezas" header-class="col-optional" body-class="col-optional">
         <template #body="{ data: row }">
           {{ row.num_parts }}
         </template>

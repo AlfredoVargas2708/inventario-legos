@@ -71,6 +71,22 @@ export const getColors = async (
   return response.data;
 };
 
+export interface LegoTheme {
+  id: number;
+  name: string;
+  parent_id: number | null;
+}
+
+export interface ThemesResponse {
+  total: number;
+  results: LegoTheme[];
+}
+
+export const getThemes = async (signal?: AbortSignal): Promise<ThemesResponse> => {
+  const response = await axios.get(`${environment.apiUrl}/themes`, { signal });
+  return response.data;
+};
+
 export const searchValue = async (
   column: string,
   value: string,

@@ -3,6 +3,7 @@ import { computed } from "vue";
 import Select from "primevue/select";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
+import type { CatalogFilterConfig } from "@/constants/inventory";
 
 const props = defineProps<{
   filterField: string;
@@ -11,9 +12,7 @@ const props = defineProps<{
   hasActiveFilter: boolean;
   fieldId?: string;
   valueId?: string;
-  colorOptions?: { label: string; value: string }[];
-  colorFilterField?: string;
-  colorsLoading?: boolean;
+  catalogFilter?: CatalogFilterConfig | null;
 }>();
 
 const emit = defineEmits<{
@@ -24,11 +23,11 @@ const emit = defineEmits<{
   filterInput: [];
 }>();
 
-const isColorFilter = computed(
+const isCatalogFilter = computed(
   () =>
-    Boolean(props.colorFilterField) &&
-    props.filterField === props.colorFilterField &&
-    (props.colorOptions?.length ?? 0) > 0,
+    Boolean(props.catalogFilter) &&
+    props.filterField === props.catalogFilter?.field &&
+    (props.catalogFilter?.options.length ?? 0) > 0,
 );
 </script>
 
@@ -52,16 +51,16 @@ const isColorFilter = computed(
     <div class="filter-field filter-field--value">
       <label :for="valueId ?? 'filter-value'" class="field-label">Valor</label>
       <Select
-        v-if="isColorFilter"
+        v-if="isCatalogFilter && catalogFilter"
         :id="valueId ?? 'filter-value'"
         :model-value="filterValue"
-        :options="colorOptions"
-        placeholder="Elige un color"
+        :options="catalogFilter.options"
+        :placeholder="catalogFilter.placeholder"
         option-label="label"
         option-value="value"
         show-clear
         filter
-        :loading="colorsLoading"
+        :loading="catalogFilter.loading"
         :disabled="!filterField"
         class="w-full"
         @update:model-value="emit('update:filterValue', $event ?? '')"

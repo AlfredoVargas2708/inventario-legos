@@ -73,8 +73,8 @@
 }
 
 .imagen-table {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 5rem;
+  height: 5rem;
   object-fit: contain;
   border-radius: 6px;
   background: var(--p-surface-50, #f8fafc);

@@ -22,3 +22,12 @@ export const DATA_TABLE_PAGINATOR_TEMPLATE =
 export const DATA_TABLE_PAGE_REPORT = "{first}–{last} de {totalRecords}";
 
 export const COLOR_FILTER_FIELD = "color.name";
+
+export const THEME_FILTER_FIELD = "theme.name";
+
+export interface CatalogFilterConfig {
+  field: string;
+  options: { label: string; value: string }[];
+  placeholder: string;
+  loading?: boolean;
+}

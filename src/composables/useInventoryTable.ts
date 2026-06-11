@@ -3,15 +3,19 @@ import type { DataTablePageEvent, DataTableSortEvent } from "primevue/datatable"
 import {
   getInventario,
   getColors,
+  getThemes,
   type InventoryFilters,
   type InventorySort,
   type LegoColor,
+  type LegoTheme,
 } from "@/api/api.service";
 import type { PaginationInfo } from "@/api/data-sharing.service";
 import {
   COLOR_FILTER_FIELD,
   LEGO_FILTER_OPTIONS,
   PIEZA_FILTER_OPTIONS,
+  THEME_FILTER_FIELD,
+  type CatalogFilterConfig,
 } from "@/constants/inventory";
 import { useServerPagination } from "@/composables/useServerPagination";
 
@@ -20,7 +24,9 @@ export function useInventoryTable(column: Ref<string>, searchValue: Ref<string>)
   const pagination = ref<PaginationInfo | null>(null);
   const loading = ref(false);
   const colorsLoading = ref(false);
+  const themesLoading = ref(false);
   const legoColors = ref<LegoColor[]>([]);
+  const legoThemes = ref<LegoTheme[]>([]);
   const filterField = ref("");
   const filterValue = ref("");
   const sortField = ref<string | undefined>();
@@ -40,6 +46,43 @@ export function useInventoryTable(column: Ref<string>, searchValue: Ref<string>)
       return { label, value: label };
     }),
   );
+
+  const themeFilterOptions = computed(() =>
+    legoThemes.value.map((theme) => ({
+      label: theme.name,
+      value: theme.name,
+    })),
+  );
+
+  const catalogFilter = computed((): CatalogFilterConfig | null => {
+    if (
+      column.value === "lego" &&
+      filterField.value === COLOR_FILTER_FIELD &&
+      colorFilterOptions.value.length > 0
+    ) {
+      return {
+        field: COLOR_FILTER_FIELD,
+        options: colorFilterOptions.value,
+        placeholder: "Elige un color",
+        loading: colorsLoading.value,
+      };
+    }
+
+    if (
+      column.value === "pieza" &&
+      filterField.value === THEME_FILTER_FIELD &&
+      themeFilterOptions.value.length > 0
+    ) {
+      return {
+        field: THEME_FILTER_FIELD,
+        options: themeFilterOptions.value,
+        placeholder: "Elige un tema",
+        loading: themesLoading.value,
+      };
+    }
+
+    return null;
+  });
 
   const { rows, totalRecords, first, resetFirst, applyPageEvent, isDuplicatePageEvent } =
     useServerPagination(pagination);
@@ -86,11 +129,29 @@ export function useInventoryTable(column: Ref<string>, searchValue: Ref<string>)
     }
   }
 
+  async function fetchThemes() {
+    if (legoThemes.value.length > 0) return;
+
+    themesLoading.value = true;
+    try {
+      const data = await getThemes();
+      legoThemes.value = data.results ?? [];
+    } catch (error) {
+      console.error(error);
+      legoThemes.value = [];
+    } finally {
+      themesLoading.value = false;
+    }
+  }
+
   async function initializeInventory() {
     resetQueryState();
     const tasks: Promise<void>[] = [fetchInventory()];
     if (column.value === "lego") {
       tasks.push(fetchColors());
+    }
+    if (column.value === "pieza") {
+      tasks.push(fetchThemes());
     }
     await Promise.all(tasks);
   }
@@ -171,8 +232,7 @@ export function useInventoryTable(column: Ref<string>, searchValue: Ref<string>)
     inventoryData,
     pagination,
     loading,
-    colorsLoading,
-    colorFilterOptions,
+    catalogFilter,
     filterField,
     filterValue,
     sortField,
@@ -190,6 +250,5 @@ export function useInventoryTable(column: Ref<string>, searchValue: Ref<string>)
     clearFilter,
     onFilterInput,
     onFilterFieldChange,
-    colorFilterField: COLOR_FILTER_FIELD,
   };
 }

@@ -26,8 +26,10 @@ const toast = useToast();
 
 const data = computed(() => (Array.isArray(tableData.value) ? tableData.value : []));
 const hasData = computed(() => (pagination.value?.total ?? 0) > 0);
-const { rows, totalRecords, first, applyPageEvent, isDuplicatePageEvent } =
-  useServerPagination(pagination, 6);
+const { rows, totalRecords, first, applyPageEvent, isDuplicatePageEvent } = useServerPagination(
+  pagination,
+  6,
+);
 
 const editDialogVisible = ref(false);
 const selectedPedido = ref<PedidoRow | null>(null);
@@ -104,6 +106,8 @@ function confirmDelete(row: PedidoRow) {
         :loading="loading"
         min-width="56rem"
         @page="onPage"
+        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
+        currentPageReportTemplate="{first} to {last} of {totalRecords}"
       >
         <Column header="Código" frozen>
           <template #body="{ data: row }">
@@ -181,12 +185,7 @@ function confirmDelete(row: PedidoRow) {
 
         <Column header="Cant." field="cantidad" header-class="col-qty" body-class="col-qty" />
 
-        <Column
-          header="Bolsa"
-          field="task"
-          header-class="col-optional"
-          body-class="col-optional"
-        />
+        <Column header="Bolsa" field="task" header-class="col-optional" body-class="col-optional" />
 
         <Column header="Pedido" header-class="col-status" body-class="col-status">
           <template #body="{ data: row }">
@@ -202,10 +201,7 @@ function confirmDelete(row: PedidoRow) {
 
         <Column header="Completo" header-class="col-status" body-class="col-status">
           <template #body="{ data: row }">
-            <Tag
-              :value="row.esta_completo ?? 'No'"
-              :severity="yesNoSeverity(row.esta_completo)"
-            />
+            <Tag :value="row.esta_completo ?? 'No'" :severity="yesNoSeverity(row.esta_completo)" />
           </template>
         </Column>
 
@@ -215,17 +211,17 @@ function confirmDelete(row: PedidoRow) {
           </template>
         </Column>
 
-          <Column header="Acciones" header-class="col-actions" body-class="col-actions">
-            <template #body="{ data: row }">
-              <div class="action-group">
-                <LegoInstructions
-                  v-if="column === 'pieza'"
-                  variant="icon"
-                  :instrucciones="getPedidoInstrucciones(row)"
-                  :set-label="String(row.lego ?? row.rebrickData?.name ?? '')"
-                />
-                <Button
-                  icon="pi pi-pencil"
+        <Column header="Acciones" header-class="col-actions" body-class="col-actions">
+          <template #body="{ data: row }">
+            <div class="action-group">
+              <LegoInstructions
+                v-if="column === 'pieza'"
+                variant="icon"
+                :instrucciones="getPedidoInstrucciones(row)"
+                :set-label="String(row.lego ?? row.rebrickData?.name ?? '')"
+              />
+              <Button
+                icon="pi pi-pencil"
                 severity="info"
                 outlined
                 rounded
