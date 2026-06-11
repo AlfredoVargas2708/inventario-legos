@@ -47,6 +47,19 @@ export interface Instrucciones {
   folleto?: InstructionBooklet;
 }
 
+export interface Minifigura {
+  id: number;
+  set_num: string;
+  set_name: string;
+  quantity: number;
+  set_img_url: string;
+}
+
+export interface MinifigurasResponse {
+  total: number;
+  results: Minifigura[];
+}
+
 export interface LegoColor {
   id: number;
   name: string;

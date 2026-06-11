@@ -17,7 +17,14 @@ import TableCard from "@/components/common/TableCard.vue";
 import ServerDataTable from "@/components/common/ServerDataTable.vue";
 import EditarPedido from "@/components/pedidos/EditarPedido.vue";
 import LegoInstructions from "@/components/info/LegoInstructions.vue";
+import MinifigurasDialog from "@/components/minifiguras/MinifigurasDialog.vue";
 import { getPedidoInstrucciones } from "@/utils/instructions";
+import {
+  getPedidoMinifigCount,
+  getPedidoMinifigLabel,
+  getPedidoMinifiguras,
+} from "@/utils/minifiguras";
+import type { Minifigura } from "@/api/api.service";
 
 const dataService = useDataSharingService();
 const { tableData, column, pagination, loading } = storeToRefs(dataService);
@@ -33,6 +40,9 @@ const { rows, totalRecords, first, applyPageEvent, isDuplicatePageEvent } = useS
 
 const editDialogVisible = ref(false);
 const selectedPedido = ref<PedidoRow | null>(null);
+const minifigDialogVisible = ref(false);
+const selectedMinifiguras = ref<Minifigura[]>([]);
+const minifigDialogHeader = ref("Minifiguras");
 
 function getValue<T>(row: T, legoGetter: (row: T) => unknown, piezaGetter: (row: T) => unknown) {
   return getValueByColumn(column.value, row, legoGetter, piezaGetter);
@@ -47,6 +57,12 @@ function onPage(event: DataTablePageEvent) {
 function openEdit(row: PedidoRow) {
   selectedPedido.value = row;
   editDialogVisible.value = true;
+}
+
+function verMinifiguras(row: PedidoRow) {
+  selectedMinifiguras.value = getPedidoMinifiguras(row);
+  minifigDialogHeader.value = `Minifiguras · ${getPedidoMinifigLabel(row)}`;
+  minifigDialogVisible.value = true;
 }
 
 function onPedidoUpdated() {
@@ -221,6 +237,18 @@ function confirmDelete(row: PedidoRow) {
                 :set-label="String(row.lego ?? row.rebrickData?.name ?? '')"
               />
               <Button
+                v-if="column === 'pieza'"
+                icon="pi pi-users"
+                outlined
+                rounded
+                size="small"
+                severity="success"
+                :aria-label="`Ver minifiguras (${getPedidoMinifigCount(row)})`"
+                :title="`Ver minifiguras (${getPedidoMinifigCount(row)})`"
+                class="action-btn action-btn--minifigs"
+                @click="verMinifiguras(row)"
+              />
+              <Button
                 icon="pi pi-pencil"
                 severity="info"
                 outlined
@@ -271,6 +299,12 @@ function confirmDelete(row: PedidoRow) {
         @success="onPedidoUpdated"
       />
     </Dialog>
+
+    <MinifigurasDialog
+      v-model:visible="minifigDialogVisible"
+      :minifiguras="selectedMinifiguras"
+      :header="minifigDialogHeader"
+    />
   </TableCard>
 </template>
 
@@ -294,6 +328,10 @@ function confirmDelete(row: PedidoRow) {
 
 .action-btn--edit :deep(.p-button:not(:disabled):hover) {
   background: var(--p-blue-50, #eff6ff);
+}
+
+.action-btn--minifigs :deep(.p-button:not(:disabled):hover) {
+  background: var(--p-green-50, #f0fdf4);
 }
 
 .action-btn--delete :deep(.p-button:not(:disabled):hover) {

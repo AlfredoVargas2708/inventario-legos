@@ -19,11 +19,13 @@ const { column, valueInfo } = storeToRefs(useDataSharingService());
 const route = useRoute();
 const router = useRouter();
 
+const isPedidos = computed(() => route.name === "pedidos");
 const isInventario = computed(() => route.name === "inventario");
 const isLego = computed(() => column.value === "lego");
 const isPieza = computed(() => column.value === "pieza");
 
 const totalResults = computed(() => valueInfo.value?.pagination?.total ?? 0);
+const minifigurasTotal = computed(() => valueInfo.value?.minifiguras?.total ?? 0);
 
 const instrucciones = computed<Instrucciones | undefined>(
   () => (isLego.value ? valueInfo.value?.instrucciones : undefined),
@@ -66,6 +68,16 @@ const infoItems = computed((): InfoItem[] => {
       { label: "Año", type: "text", value: l.year },
       { label: "Tema", type: "text", value: l.theme },
       { label: "Piezas", type: "text", value: `${l.numParts} piezas` },
+      ...(minifigurasTotal.value > 0
+        ? [
+            {
+              label: "Minifiguras",
+              type: "tag" as const,
+              value: `${minifigurasTotal.value} minifiguras`,
+              severity: "info" as const,
+            },
+          ]
+        : []),
       {
         label: "Pedidos",
         type: "tag",
@@ -96,9 +108,11 @@ const infoItems = computed((): InfoItem[] => {
   return [];
 });
 
-function toggleVista() {
-  router.push({ name: isInventario.value ? "pedidos" : "inventario" });
+function goToVista(name: "pedidos" | "inventario") {
+  router.push({ name });
 }
+
+const showLegoInstructions = computed(() => isLego.value);
 
 const displayImage = computed(() => legoInfo.value?.img ?? piezaInfo.value?.img ?? "");
 const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.title ?? "");
@@ -114,16 +128,27 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
           </div>
 
           <Button
-            :label="isInventario ? 'Pedidos' : 'Inventario'"
-            :icon="isInventario ? 'pi pi-list' : 'pi pi-box'"
+            v-if="!isPedidos"
+            label="Pedidos"
+            icon="pi pi-list"
             size="small"
             severity="success"
             outlined
             class="add-btn"
-            @click="toggleVista"
+            @click="goToVista('pedidos')"
+          />
+          <Button
+            v-if="!isInventario"
+            label="Inventario"
+            icon="pi pi-box"
+            size="small"
+            severity="success"
+            outlined
+            class="add-btn"
+            @click="goToVista('inventario')"
           />
 
-          <LegoInstructions v-if="isLego" :instrucciones="instrucciones" />
+          <LegoInstructions v-if="showLegoInstructions" :instrucciones="instrucciones" />
         </div>
 
         <DataView :value="infoItems" layout="list" class="info-body">

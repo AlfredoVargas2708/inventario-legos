@@ -13,13 +13,23 @@ import FilterBar from "@/components/common/FilterBar.vue";
 import ServerDataTable from "@/components/common/ServerDataTable.vue";
 import AgregarPedido from "@/components/inventario/AgregarPedido.vue";
 import LegoInstructions from "@/components/info/LegoInstructions.vue";
+import MinifigurasDialog from "@/components/minifiguras/MinifigurasDialog.vue";
 import { getInventoryInstrucciones } from "@/utils/instructions";
+import type { Minifigura } from "@/api/api.service";
 
 const { column, searchValue, valueInfo } = storeToRefs(useDataSharingService());
 const toast = useToast();
 
 const addDialogVisible = ref(false);
 const selectedItem = ref<Record<string, unknown> | null>(null);
+const minifigDialogVisible = ref(false);
+const selectedMinifiguras = ref<Minifigura[]>([]);
+const minifigDialogHeader = ref("Minifiguras");
+
+const setMinifiguras = computed(() => {
+  const data = valueInfo.value?.minifiguras as { results?: Minifigura[] } | undefined;
+  return data?.results ?? [];
+});
 
 const setNombre = computed(() => {
   if (column.value === "lego") return valueInfo.value?.name ?? "";
@@ -63,6 +73,23 @@ function agregarElemento(row: Record<string, unknown>) {
   addDialogVisible.value = true;
 }
 
+function verMinifiguras(row: Record<string, unknown>) {
+  const minifiguras = (row.minifiguras as { results?: Minifigura[] } | undefined)?.results ?? [];
+  selectedMinifiguras.value = minifiguras;
+  minifigDialogHeader.value = `Minifiguras · ${String(row.name ?? row.set_num ?? "")}`;
+  minifigDialogVisible.value = true;
+}
+
+function verMinifigurasDelSet() {
+  selectedMinifiguras.value = setMinifiguras.value;
+  minifigDialogHeader.value = `Minifiguras · ${setNombre.value || searchValue.value}`;
+  minifigDialogVisible.value = true;
+}
+
+function minifigCount(row: Record<string, unknown>): number {
+  return (row.minifiguras as { total?: number } | undefined)?.total ?? 0;
+}
+
 function onPedidoCreated() {
   addDialogVisible.value = false;
   selectedItem.value = null;
@@ -77,7 +104,20 @@ function onPedidoCreated() {
 
 <template>
   <TableCard v-if="hasSearch">
-    <template #title>Inventario</template>
+    <template #title>
+      <div class="inventory-title">
+        <span>Inventario</span>
+        <Button
+          v-if="column === 'lego' && setMinifiguras.length > 0"
+          label="Minifiguras"
+          icon="pi pi-users"
+          size="small"
+          severity="success"
+          outlined
+          @click="verMinifigurasDelSet"
+        />
+      </div>
+    </template>
 
     <FilterBar
       :filter-field="filterField"
@@ -229,6 +269,18 @@ function onPedidoCreated() {
               :set-label="String(row.name ?? row.set_num ?? '')"
             />
             <Button
+              v-if="column === 'pieza'"
+              icon="pi pi-users"
+              outlined
+              rounded
+              size="small"
+              severity="success"
+              :aria-label="`Ver minifiguras (${minifigCount(row)})`"
+              :title="`Ver minifiguras (${minifigCount(row)})`"
+              class="action-btn action-btn--minifigs"
+              @click="verMinifiguras(row)"
+            />
+            <Button
               icon="pi pi-plus-circle"
               outlined
               rounded
@@ -266,6 +318,12 @@ function onPedidoCreated() {
         @success="onPedidoCreated"
       />
     </Dialog>
+
+    <MinifigurasDialog
+      v-model:visible="minifigDialogVisible"
+      :minifiguras="selectedMinifiguras"
+      :header="minifigDialogHeader"
+    />
   </TableCard>
 </template>
 
@@ -322,5 +380,17 @@ function onPedidoCreated() {
 
 .action-btn--add :deep(.p-button:not(:disabled):hover) {
   background: var(--p-blue-50, #eff6ff);
+}
+
+.action-btn--minifigs :deep(.p-button:not(:disabled):hover) {
+  background: var(--p-green-50, #f0fdf4);
+}
+
+.inventory-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 </style>
