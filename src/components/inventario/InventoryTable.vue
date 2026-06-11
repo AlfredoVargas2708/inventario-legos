@@ -41,7 +41,11 @@ const {
   totalRecords,
   first,
   fetchInventory,
+  initializeInventory,
   resetQueryState,
+  colorFilterOptions,
+  colorFilterField,
+  colorsLoading,
   onPage,
   onSort,
   clearFilter,
@@ -50,8 +54,7 @@ const {
 } = useInventoryTable(column, searchValue);
 
 onMounted(() => {
-  resetQueryState();
-  fetchInventory();
+  initializeInventory();
 });
 
 function getValue<T>(row: T, legoGetter: (row: T) => unknown, piezaGetter: (row: T) => unknown) {
@@ -84,6 +87,9 @@ function onPedidoCreated() {
       :filter-value="filterValue"
       :options="filterOptions"
       :has-active-filter="hasActiveFilter"
+      :color-options="colorFilterOptions"
+      :color-filter-field="colorFilterField"
+      :colors-loading="colorsLoading"
       field-id="inventory-filter-field"
       value-id="inventory-filter-value"
       @update:filter-field="filterField = $event"

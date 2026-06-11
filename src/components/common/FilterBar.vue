@@ -1,15 +1,19 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import Select from "primevue/select";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 
-defineProps<{
+const props = defineProps<{
   filterField: string;
   filterValue: string;
   options: { label: string; value: string }[];
   hasActiveFilter: boolean;
   fieldId?: string;
   valueId?: string;
+  colorOptions?: { label: string; value: string }[];
+  colorFilterField?: string;
+  colorsLoading?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -19,6 +23,13 @@ const emit = defineEmits<{
   fieldChange: [];
   filterInput: [];
 }>();
+
+const isColorFilter = computed(
+  () =>
+    Boolean(props.colorFilterField) &&
+    props.filterField === props.colorFilterField &&
+    (props.colorOptions?.length ?? 0) > 0,
+);
 </script>
 
 <template>
@@ -40,7 +51,24 @@ const emit = defineEmits<{
     </div>
     <div class="filter-field filter-field--value">
       <label :for="valueId ?? 'filter-value'" class="field-label">Valor</label>
+      <Select
+        v-if="isColorFilter"
+        :id="valueId ?? 'filter-value'"
+        :model-value="filterValue"
+        :options="colorOptions"
+        placeholder="Elige un color"
+        option-label="label"
+        option-value="value"
+        show-clear
+        filter
+        :loading="colorsLoading"
+        :disabled="!filterField"
+        class="w-full"
+        @update:model-value="emit('update:filterValue', $event ?? '')"
+        @change="emit('filterInput')"
+      />
       <InputText
+        v-else
         :id="valueId ?? 'filter-value'"
         :model-value="filterValue"
         placeholder="Texto a buscar"

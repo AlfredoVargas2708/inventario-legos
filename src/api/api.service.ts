@@ -47,6 +47,30 @@ export interface Instrucciones {
   folleto?: InstructionBooklet;
 }
 
+export interface LegoColor {
+  id: number;
+  name: string;
+  rgb: string;
+  is_trans: boolean;
+  name_translated?: string;
+}
+
+export interface ColorsResponse {
+  total: number;
+  results: LegoColor[];
+}
+
+export const getColors = async (
+  lang = "es",
+  signal?: AbortSignal,
+): Promise<ColorsResponse> => {
+  const response = await axios.get(`${environment.apiUrl}/colors`, {
+    params: { lang },
+    signal,
+  });
+  return response.data;
+};
+
 export const searchValue = async (
   column: string,
   value: string,

@@ -1,14 +1,26 @@
 import { computed, ref, type Ref } from "vue";
 import type { DataTablePageEvent, DataTableSortEvent } from "primevue/datatable";
-import { getInventario, type InventoryFilters, type InventorySort } from "@/api/api.service";
+import {
+  getInventario,
+  getColors,
+  type InventoryFilters,
+  type InventorySort,
+  type LegoColor,
+} from "@/api/api.service";
 import type { PaginationInfo } from "@/api/data-sharing.service";
-import { LEGO_FILTER_OPTIONS, PIEZA_FILTER_OPTIONS } from "@/constants/inventory";
+import {
+  COLOR_FILTER_FIELD,
+  LEGO_FILTER_OPTIONS,
+  PIEZA_FILTER_OPTIONS,
+} from "@/constants/inventory";
 import { useServerPagination } from "@/composables/useServerPagination";
 
 export function useInventoryTable(column: Ref<string>, searchValue: Ref<string>) {
   const inventoryData = ref<Record<string, unknown>[]>([]);
   const pagination = ref<PaginationInfo | null>(null);
   const loading = ref(false);
+  const colorsLoading = ref(false);
+  const legoColors = ref<LegoColor[]>([]);
   const filterField = ref("");
   const filterValue = ref("");
   const sortField = ref<string | undefined>();
@@ -17,13 +29,16 @@ export function useInventoryTable(column: Ref<string>, searchValue: Ref<string>)
   let filterDebounce: ReturnType<typeof setTimeout> | null = null;
 
   const filterOptions = computed(() =>
-    column.value === "lego"
-      ? [...LEGO_FILTER_OPTIONS]
-      : [...PIEZA_FILTER_OPTIONS],
+    column.value === "lego" ? [...LEGO_FILTER_OPTIONS] : [...PIEZA_FILTER_OPTIONS],
   );
 
-  const hasActiveFilter = computed(
-    () => Boolean(filterField.value && filterValue.value.trim()),
+  const hasActiveFilter = computed(() => Boolean(filterField.value && filterValue.value.trim()));
+
+  const colorFilterOptions = computed(() =>
+    legoColors.value.map((color) => {
+      const label = color.name_translated ?? color.name;
+      return { label, value: label };
+    }),
   );
 
   const { rows, totalRecords, first, resetFirst, applyPageEvent, isDuplicatePageEvent } =
@@ -54,6 +69,30 @@ export function useInventoryTable(column: Ref<string>, searchValue: Ref<string>)
     const value = filterValue.value.trim();
     if (!field || !value) return {};
     return { [field]: value };
+  }
+
+  async function fetchColors() {
+    if (legoColors.value.length > 0) return;
+
+    colorsLoading.value = true;
+    try {
+      const data = await getColors("es");
+      legoColors.value = data.results ?? [];
+    } catch (error) {
+      console.error(error);
+      legoColors.value = [];
+    } finally {
+      colorsLoading.value = false;
+    }
+  }
+
+  async function initializeInventory() {
+    resetQueryState();
+    const tasks: Promise<void>[] = [fetchInventory()];
+    if (column.value === "lego") {
+      tasks.push(fetchColors());
+    }
+    await Promise.all(tasks);
   }
 
   async function fetchInventory(page = 1, pageSize = pagination.value?.pageSize ?? 6) {
@@ -132,6 +171,8 @@ export function useInventoryTable(column: Ref<string>, searchValue: Ref<string>)
     inventoryData,
     pagination,
     loading,
+    colorsLoading,
+    colorFilterOptions,
     filterField,
     filterValue,
     sortField,
@@ -142,11 +183,13 @@ export function useInventoryTable(column: Ref<string>, searchValue: Ref<string>)
     totalRecords,
     first,
     fetchInventory,
+    initializeInventory,
     resetQueryState,
     onPage,
     onSort,
     clearFilter,
     onFilterInput,
     onFilterFieldChange,
+    colorFilterField: COLOR_FILTER_FIELD,
   };
 }

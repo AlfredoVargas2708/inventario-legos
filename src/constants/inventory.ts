@@ -20,3 +20,5 @@ export const DATA_TABLE_PAGINATOR_TEMPLATE =
   "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport";
 
 export const DATA_TABLE_PAGE_REPORT = "{first}–{last} de {totalRecords}";
+
+export const COLOR_FILTER_FIELD = "color.name";
