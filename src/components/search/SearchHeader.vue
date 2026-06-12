@@ -29,9 +29,10 @@ async function search() {
 
   dataService.setColumn(selected.value);
   dataService.setSearchValue(query);
+  dataService.resetPedidosQuery();
 
   try {
-    await dataService.fetchSearch(1, 6, { throwOnError: true });
+    await dataService.fetchSearch(1, 6, { throwOnError: true, filters: {}, sort: null });
     await router.push({ name: "pedidos" });
 
     if ((pagination.value?.total ?? 0) === 0) {

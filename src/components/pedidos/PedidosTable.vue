@@ -6,12 +6,12 @@ import Tag from "primevue/tag";
 import Dialog from "primevue/dialog";
 import ConfirmDialog from "primevue/confirmdialog";
 import { useConfirm } from "primevue/useconfirm";
-import type { DataTablePageEvent } from "primevue/datatable";
 import Button from "primevue/button";
 import { useToast } from "primevue/usetoast";
 import { useDataSharingService } from "@/api/data-sharing.service";
 import { deletePedido, type PedidoRow } from "@/api/api.service";
-import { useServerPagination } from "@/composables/useServerPagination";
+import { usePedidosTable } from "@/composables/usePedidosTable";
+import FilterBar from "@/components/common/FilterBar.vue";
 import { getValueByColumn, yesNoSeverity } from "@/utils/lego-helpers";
 import TableCard from "@/components/common/TableCard.vue";
 import ServerDataTable from "@/components/common/ServerDataTable.vue";
@@ -27,16 +27,31 @@ import {
 import type { Minifigura } from "@/api/api.service";
 
 const dataService = useDataSharingService();
-const { tableData, column, pagination, loading } = storeToRefs(dataService);
+const { tableData, column, pagination, loading, valueInfo } = storeToRefs(dataService);
 const confirm = useConfirm();
 const toast = useToast();
 
 const data = computed(() => (Array.isArray(tableData.value) ? tableData.value : []));
-const hasData = computed(() => (pagination.value?.total ?? 0) > 0);
-const { rows, totalRecords, first, applyPageEvent, isDuplicatePageEvent } = useServerPagination(
-  pagination,
-  6,
-);
+const hasSearch = computed(() => valueInfo.value != null);
+
+const {
+  filterField,
+  filterValue,
+  sortField,
+  sortOrder,
+  filterOptions,
+  hasActiveFilter,
+  catalogFilter,
+  rows,
+  totalRecords,
+  first,
+  fetchPedidos,
+  onPage,
+  onSort,
+  clearFilter,
+  onFilterInput,
+  onFilterFieldChange,
+} = usePedidosTable();
 
 const editDialogVisible = ref(false);
 const selectedPedido = ref<PedidoRow | null>(null);
@@ -46,12 +61,6 @@ const minifigDialogHeader = ref("Minifiguras");
 
 function getValue<T>(row: T, legoGetter: (row: T) => unknown, piezaGetter: (row: T) => unknown) {
   return getValueByColumn(column.value, row, legoGetter, piezaGetter);
-}
-
-function onPage(event: DataTablePageEvent) {
-  if (isDuplicatePageEvent(event, loading)) return;
-  applyPageEvent(event);
-  dataService.fetchSearch(event.page + 1, event.rows);
 }
 
 function openEdit(row: PedidoRow) {
@@ -97,7 +106,7 @@ function confirmDelete(row: PedidoRow) {
       const page = pagination.value?.page ?? 1;
       const pageSize = pagination.value?.pageSize ?? 6;
       const isLastItemOnPage = data.value.length === 1 && page > 1;
-      await dataService.fetchSearch(isLastItemOnPage ? page - 1 : page, pageSize);
+      await fetchPedidos(isLastItemOnPage ? page - 1 : page, pageSize);
       toast.add({
         severity: "success",
         summary: "Elemento Eliminado",
@@ -110,8 +119,24 @@ function confirmDelete(row: PedidoRow) {
 </script>
 
 <template>
-  <TableCard v-if="hasData">
+  <TableCard v-if="hasSearch">
     <template #title>Resultados</template>
+
+    <FilterBar
+      :key="column"
+      :filter-field="filterField"
+      :filter-value="filterValue"
+      :options="filterOptions"
+      :has-active-filter="hasActiveFilter"
+      :catalog-filter="catalogFilter"
+      field-id="pedidos-filter-field"
+      value-id="pedidos-filter-value"
+      @update:filter-field="filterField = $event"
+      @update:filter-value="filterValue = $event"
+      @clear="clearFilter"
+      @field-change="onFilterFieldChange"
+      @filter-input="onFilterInput"
+    />
 
     <div class="table-scroll">
       <ServerDataTable
@@ -120,8 +145,11 @@ function confirmDelete(row: PedidoRow) {
         :total-records="totalRecords"
         :first="first"
         :loading="loading"
+        :sort-field="sortField"
+        :sort-order="sortOrder"
         min-width="56rem"
         @page="onPage"
+        @sort="onSort"
         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
         currentPageReportTemplate="{first} to {last} of {totalRecords}"
       >
@@ -199,29 +227,65 @@ function confirmDelete(row: PedidoRow) {
           </template>
         </Column>
 
-        <Column header="Cant." field="cantidad" header-class="col-qty" body-class="col-qty" />
+        <Column
+          header="Cant."
+          field="cantidad"
+          sortable
+          header-class="col-qty"
+          body-class="col-qty"
+        />
 
-        <Column header="Bolsa" field="task" header-class="col-optional" body-class="col-optional" />
+        <Column
+          header="Bolsa"
+          field="task"
+          sortable
+          header-class="col-optional"
+          body-class="col-optional"
+        />
 
-        <Column header="Pedido" header-class="col-status" body-class="col-status">
+        <Column
+          header="Pedido"
+          field="esta_pedido"
+          sortable
+          header-class="col-status"
+          body-class="col-status"
+        >
           <template #body="{ data: row }">
             <Tag :value="row.esta_pedido" :severity="yesNoSeverity(row.esta_pedido)" />
           </template>
         </Column>
 
-        <Column header="Reemplazado" header-class="col-optional" body-class="col-optional">
+        <Column
+          header="Reemplazado"
+          field="esta_reemplazado"
+          sortable
+          header-class="col-optional"
+          body-class="col-optional"
+        >
           <template #body="{ data: row }">
             {{ row.esta_reemplazado ?? "Sin Reemplazo" }}
           </template>
         </Column>
 
-        <Column header="Completo" header-class="col-status" body-class="col-status">
+        <Column
+          header="Completo"
+          field="esta_completo"
+          sortable
+          header-class="col-status"
+          body-class="col-status"
+        >
           <template #body="{ data: row }">
             <Tag :value="row.esta_completo ?? 'No'" :severity="yesNoSeverity(row.esta_completo)" />
           </template>
         </Column>
 
-        <Column header="Comentarios" header-class="col-optional" body-class="col-optional">
+        <Column
+          header="Comentarios"
+          field="comentarios"
+          sortable
+          header-class="col-optional"
+          body-class="col-optional"
+        >
           <template #body="{ data: row }">
             <span class="cell-comments">{{ row.comentarios ?? "Sin Comentarios" }}</span>
           </template>
@@ -273,6 +337,10 @@ function confirmDelete(row: PedidoRow) {
             </div>
           </template>
         </Column>
+
+        <template #empty>
+          <p class="empty-message">No hay pedidos que coincidan con este filtro.</p>
+        </template>
       </ServerDataTable>
     </div>
 
@@ -324,6 +392,13 @@ function confirmDelete(row: PedidoRow) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.empty-message {
+  margin: 0;
+  padding: 1rem 0;
+  text-align: center;
+  color: var(--p-text-muted-color, #64748b);
 }
 
 .action-btn--edit :deep(.p-button:not(:disabled):hover) {

@@ -105,10 +105,27 @@ export const searchValue = async (
   value: string,
   page: number,
   pageSize: number,
+  filters: PedidosFilters = {},
+  sort?: PedidosSort | null,
   signal?: AbortSignal,
 ) => {
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(pageSize),
+  });
+
+  for (const [key, filterValue] of Object.entries(filters)) {
+    const trimmed = filterValue.trim();
+    if (trimmed) params.set(key, trimmed);
+  }
+
+  if (sort?.sortBy) {
+    params.set("sortBy", sort.sortBy);
+    params.set("sortOrder", sort.sortOrder);
+  }
+
   const response = await axios.get(
-    `${environment.apiUrl}/search/${column}/${encodeURIComponent(value)}?page=${page}&limit=${pageSize}`,
+    `${environment.apiUrl}/search/${column}/${encodeURIComponent(value)}?${params.toString()}`,
     { signal },
   );
   return response.data;
@@ -132,6 +149,10 @@ export interface InventorySort {
   sortBy: string;
   sortOrder: "asc" | "desc";
 }
+
+export type PedidosFilters = Record<string, string>;
+
+export type PedidosSort = InventorySort;
 
 export const getInventario = async (
   column: string,

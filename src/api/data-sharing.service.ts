@@ -1,7 +1,11 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import axios from "axios";
-import { searchValue as searchApi } from "@/api/api.service";
+import {
+  searchValue as searchApi,
+  type PedidosFilters,
+  type PedidosSort,
+} from "@/api/api.service";
 
 export interface PaginationInfo {
   page: number;
@@ -18,12 +22,30 @@ export const useDataSharingService = defineStore("dataSharing", () => {
   const tableData = ref<any[]>([]);
   const valueInfo = ref<any>();
   const pagination = ref<PaginationInfo | null>(null);
+  const pedidosFilters = ref<PedidosFilters>({});
+  const pedidosSort = ref<PedidosSort | null>(null);
   const loading = ref(false);
 
   let abortController: AbortController | null = null;
 
-  async function fetchSearch(page = 1, pageSize = 6, options?: { throwOnError?: boolean }) {
+  async function fetchSearch(
+    page = 1,
+    pageSize = 6,
+    options?: {
+      throwOnError?: boolean;
+      filters?: PedidosFilters;
+      sort?: PedidosSort | null;
+    },
+  ) {
     if (!column.value || !searchValue.value.trim()) return;
+
+    if (options?.filters !== undefined) {
+      pedidosFilters.value = options.filters;
+    }
+
+    if (options?.sort !== undefined) {
+      pedidosSort.value = options.sort;
+    }
 
     abortController?.abort();
     abortController = new AbortController();
@@ -35,6 +57,8 @@ export const useDataSharingService = defineStore("dataSharing", () => {
         searchValue.value,
         page,
         pageSize,
+        pedidosFilters.value,
+        pedidosSort.value,
         abortController.signal,
       );
 
@@ -44,8 +68,10 @@ export const useDataSharingService = defineStore("dataSharing", () => {
     } catch (error) {
       if (!axios.isCancel(error)) {
         console.error(error);
-        clearResults();
-        if (options?.throwOnError) throw error;
+        if (options?.throwOnError) {
+          clearResults();
+          throw error;
+        }
       }
     } finally {
       loading.value = false;
@@ -66,10 +92,18 @@ export const useDataSharingService = defineStore("dataSharing", () => {
     pagination.value = null;
   }
 
+  function resetPedidosQuery() {
+    pedidosFilters.value = {};
+    pedidosSort.value = null;
+  }
+
   async function refreshResults() {
     const page = pagination.value?.page ?? 1;
     const pageSize = pagination.value?.pageSize ?? 6;
-    await fetchSearch(page, pageSize);
+    await fetchSearch(page, pageSize, {
+      filters: pedidosFilters.value,
+      sort: pedidosSort.value,
+    });
   }
 
   return {
@@ -78,11 +112,14 @@ export const useDataSharingService = defineStore("dataSharing", () => {
     tableData,
     valueInfo,
     pagination,
+    pedidosFilters,
+    pedidosSort,
     loading,
     setColumn,
     setSearchValue,
     fetchSearch,
     refreshResults,
     clearResults,
+    resetPedidosQuery,
   };
 });

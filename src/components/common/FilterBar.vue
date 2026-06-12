@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, nextTick, ref, type ComponentPublicInstance } from "vue";
 import Select from "primevue/select";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
@@ -29,6 +29,34 @@ const isCatalogFilter = computed(
     props.filterField === props.catalogFilter?.field &&
     (props.catalogFilter?.options.length ?? 0) > 0,
 );
+
+const valueInputRef = ref<ComponentPublicInstance | null>(null);
+
+function focusValueInput() {
+  const element = valueInputRef.value?.$el as HTMLElement | null;
+  if (!element) return;
+
+  if (
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement ||
+    element instanceof HTMLSelectElement
+  ) {
+    element.focus();
+    return;
+  }
+
+  const focusable = element.querySelector("input, textarea, select") as HTMLElement | null;
+  focusable?.focus();
+}
+
+function handleFieldChange() {
+  emit("fieldChange");
+  nextTick(() => {
+    setTimeout(() => {
+      focusValueInput();
+    }, 1000);
+  });
+}
 </script>
 
 <template>
@@ -45,13 +73,14 @@ const isCatalogFilter = computed(
         show-clear
         class="w-full"
         @update:model-value="emit('update:filterField', $event ?? '')"
-        @change="emit('fieldChange')"
+        @change="handleFieldChange"
       />
     </div>
     <div class="filter-field filter-field--value">
       <label :for="valueId ?? 'filter-value'" class="field-label">Valor</label>
       <Select
         v-if="isCatalogFilter && catalogFilter"
+        ref="valueInputRef"
         :id="valueId ?? 'filter-value'"
         :model-value="filterValue"
         :options="catalogFilter.options"
@@ -68,6 +97,7 @@ const isCatalogFilter = computed(
       />
       <InputText
         v-else
+        ref="valueInputRef"
         :id="valueId ?? 'filter-value'"
         :model-value="filterValue"
         placeholder="Texto a buscar"
