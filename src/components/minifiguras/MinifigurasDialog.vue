@@ -5,6 +5,7 @@ import Dialog from "primevue/dialog";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
 import type { Minifigura } from "@/api/api.service";
+import Image from "primevue/image";
 
 const props = withDefaults(
   defineProps<{
@@ -28,28 +29,24 @@ const dialogVisible = computed({
 </script>
 
 <template>
-  <Dialog
-    v-model:visible="dialogVisible"
-    modal
-    :header="header"
-    :style="{ width: '42rem' }"
-    :breakpoints="{ '575px': '92vw' }"
-  >
-    <DataTable
-      :value="minifiguras"
-      striped-rows
-      size="small"
-      class="inventory-table minifiguras-dialog-table"
-      :pt="{ table: { style: 'min-width: 32rem' } }"
-    >
+  <Dialog v-model:visible="dialogVisible" modal :header="header" :style="{ width: '42rem' }"
+    :breakpoints="{ '575px': '92vw' }">
+    <DataTable :value="minifiguras" striped-rows size="small" class="inventory-table minifiguras-dialog-table"
+      :pt="{ table: { style: 'min-width: 32rem' } }">
       <Column header="Imagen" style="width: 5rem">
         <template #body="{ data }">
-          <img
-            v-if="data.set_img_url"
-            :src="data.set_img_url"
-            :alt="data.set_name"
-            class="imagen-table"
-          />
+          <Image alt="Image" preview>
+            <template #previewicon>
+              <i class="pi pi-search"></i>
+            </template>
+            <template #image>
+              <img v-if="data.set_img_url" :src="data.set_img_url" :alt="data.set_name" class="imagen-table" />
+            </template>
+            <template #original="slotProps">
+              <img v-if="data.set_img_url" :src="data.set_img_url" :alt="data.set_name" :style="slotProps.style"
+                class="preview-image" @click="slotProps.previewCallback" />
+            </template>
+          </Image>
         </template>
       </Column>
 
@@ -88,5 +85,11 @@ const dialogVisible = computed({
 .minifiguras-dialog-table :deep(.imagen-table) {
   width: 3.5rem;
   height: 3.5rem;
+}
+.preview-image {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgb(0 0 0 / 30%);
+  width: 50rem;
+  height: 100%;
 }
 </style>

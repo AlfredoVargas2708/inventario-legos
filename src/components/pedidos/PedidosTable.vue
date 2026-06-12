@@ -25,6 +25,7 @@ import {
   getPedidoMinifiguras,
 } from "@/utils/minifiguras";
 import type { Minifigura } from "@/api/api.service";
+import Image from "primevue/image";
 
 const dataService = useDataSharingService();
 const { tableData, column, pagination, loading, valueInfo } = storeToRefs(dataService);
@@ -122,37 +123,17 @@ function confirmDelete(row: PedidoRow) {
   <TableCard v-if="hasSearch">
     <template #title>Resultados</template>
 
-    <FilterBar
-      :key="column"
-      :filter-field="filterField"
-      :filter-value="filterValue"
-      :options="filterOptions"
-      :has-active-filter="hasActiveFilter"
-      :catalog-filter="catalogFilter"
-      field-id="pedidos-filter-field"
-      value-id="pedidos-filter-value"
-      @update:filter-field="filterField = $event"
-      @update:filter-value="filterValue = $event"
-      @clear="clearFilter"
-      @field-change="onFilterFieldChange"
-      @filter-input="onFilterInput"
-    />
+    <FilterBar :key="column" :filter-field="filterField" :filter-value="filterValue" :options="filterOptions"
+      :has-active-filter="hasActiveFilter" :catalog-filter="catalogFilter" field-id="pedidos-filter-field"
+      value-id="pedidos-filter-value" @update:filter-field="filterField = $event"
+      @update:filter-value="filterValue = $event" @clear="clearFilter" @field-change="onFilterFieldChange"
+      @filter-input="onFilterInput" />
 
     <div class="table-scroll">
-      <ServerDataTable
-        :value="data"
-        :rows="rows"
-        :total-records="totalRecords"
-        :first="first"
-        :loading="loading"
-        :sort-field="sortField"
-        :sort-order="sortOrder"
-        min-width="56rem"
-        @page="onPage"
-        @sort="onSort"
+      <ServerDataTable :value="data" :rows="rows" :total-records="totalRecords" :first="first" :loading="loading"
+        :sort-field="sortField" :sort-order="sortOrder" min-width="56rem" @page="onPage" @sort="onSort"
         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
-        currentPageReportTemplate="{first} to {last} of {totalRecords}"
-      >
+        currentPageReportTemplate="{first} to {last} of {totalRecords}">
         <Column header="Código" frozen>
           <template #body="{ data: row }">
             <span class="cell-code">{{
@@ -167,18 +148,28 @@ function confirmDelete(row: PedidoRow) {
 
         <Column header="Imagen">
           <template #body="{ data: row }">
-            <img
-              :src="
-                getValue(
+            <Image alt="Image" preview>
+              <template #previewicon>
+                <i class="pi pi-search"></i>
+              </template>
+              <template #image>
+                <img :src="getValue(
                   row.rebrickData,
                   (r) => r.element_img_url,
                   (r) => r.set_img_url,
                 ) as string
-              "
-              alt="imagen"
-              class="imagen-table"
-              loading="lazy"
-            />
+                  " alt="imagen" class="imagen-table" loading="lazy" />
+              </template>
+              <template #original="slotProps">
+                <img :src="getValue(
+                  row.rebrickData,
+                  (r) => r.element_img_url,
+                  (r) => r.set_img_url,
+                ) as string
+                  " alt="imagen" loading="lazy" :style="slotProps.style" class="preview-image"
+                  @click="slotProps.previewCallback" />
+              </template>
+            </Image>
           </template>
         </Column>
 
@@ -194,11 +185,7 @@ function confirmDelete(row: PedidoRow) {
           </template>
         </Column>
 
-        <Column
-          :header="column === 'lego' ? 'Color' : 'Piezas'"
-          header-class="col-optional"
-          body-class="col-optional"
-        >
+        <Column :header="column === 'lego' ? 'Color' : 'Piezas'" header-class="col-optional" body-class="col-optional">
           <template #body="{ data: row }">
             {{
               getValue(
@@ -210,12 +197,7 @@ function confirmDelete(row: PedidoRow) {
           </template>
         </Column>
 
-        <Column
-          v-if="column === 'pieza'"
-          header="Tema"
-          header-class="col-optional"
-          body-class="col-optional"
-        >
+        <Column v-if="column === 'pieza'" header="Tema" header-class="col-optional" body-class="col-optional">
           <template #body="{ data: row }">
             {{
               getValue(
@@ -227,65 +209,30 @@ function confirmDelete(row: PedidoRow) {
           </template>
         </Column>
 
-        <Column
-          header="Cant."
-          field="cantidad"
-          sortable
-          header-class="col-qty"
-          body-class="col-qty"
-        />
+        <Column header="Cant." field="cantidad" sortable header-class="col-qty" body-class="col-qty" />
 
-        <Column
-          header="Bolsa"
-          field="task"
-          sortable
-          header-class="col-optional"
-          body-class="col-optional"
-        />
+        <Column header="Bolsa" field="task" sortable header-class="col-optional" body-class="col-optional" />
 
-        <Column
-          header="Pedido"
-          field="esta_pedido"
-          sortable
-          header-class="col-status"
-          body-class="col-status"
-        >
+        <Column header="Pedido" field="esta_pedido" sortable header-class="col-status" body-class="col-status">
           <template #body="{ data: row }">
             <Tag :value="row.esta_pedido" :severity="yesNoSeverity(row.esta_pedido)" />
           </template>
         </Column>
 
-        <Column
-          header="Reemplazado"
-          field="esta_reemplazado"
-          sortable
-          header-class="col-optional"
-          body-class="col-optional"
-        >
+        <Column header="Reemplazado" field="esta_reemplazado" sortable header-class="col-optional"
+          body-class="col-optional">
           <template #body="{ data: row }">
             {{ row.esta_reemplazado ?? "Sin Reemplazo" }}
           </template>
         </Column>
 
-        <Column
-          header="Completo"
-          field="esta_completo"
-          sortable
-          header-class="col-status"
-          body-class="col-status"
-        >
+        <Column header="Completo" field="esta_completo" sortable header-class="col-status" body-class="col-status">
           <template #body="{ data: row }">
             <Tag :value="row.esta_completo ?? 'No'" :severity="yesNoSeverity(row.esta_completo)" />
           </template>
         </Column>
 
-        <Column
-          header="Comentarios"
-          field="comentarios"
-          sortable
-          header-class="col-optional"
-          body-class="col-optional"
-        >
+        <Column header="Comentarios" field="comentarios" sortable header-class="col-optional" body-class="col-optional">
           <template #body="{ data: row }">
             <span class="cell-comments">{{ row.comentarios ?? "Sin Comentarios" }}</span>
           </template>
@@ -294,46 +241,16 @@ function confirmDelete(row: PedidoRow) {
         <Column header="Acciones" header-class="col-actions" body-class="col-actions">
           <template #body="{ data: row }">
             <div class="action-group">
-              <LegoInstructions
-                v-if="column === 'pieza'"
-                variant="icon"
-                :instrucciones="getPedidoInstrucciones(row)"
-                :set-label="String(row.lego ?? row.rebrickData?.name ?? '')"
-              />
-              <Button
-                v-if="column === 'pieza'"
-                icon="pi pi-users"
-                outlined
-                rounded
-                size="small"
-                severity="success"
+              <LegoInstructions v-if="column === 'pieza'" variant="icon" :instrucciones="getPedidoInstrucciones(row)"
+                :set-label="String(row.lego ?? row.rebrickData?.name ?? '')" />
+              <Button v-if="column === 'pieza'" icon="pi pi-users" outlined rounded size="small" severity="success"
                 :aria-label="`Ver minifiguras (${getPedidoMinifigCount(row)})`"
-                :title="`Ver minifiguras (${getPedidoMinifigCount(row)})`"
-                class="action-btn action-btn--minifigs"
-                @click="verMinifiguras(row)"
-              />
-              <Button
-                icon="pi pi-pencil"
-                severity="info"
-                outlined
-                rounded
-                size="small"
-                aria-label="Editar"
-                title="Editar"
-                class="action-btn action-btn--edit"
-                @click="openEdit(row)"
-              />
-              <Button
-                icon="pi pi-trash"
-                severity="danger"
-                outlined
-                rounded
-                size="small"
-                aria-label="Eliminar"
-                title="Eliminar"
-                class="action-btn action-btn--delete"
-                @click="confirmDelete(row)"
-              />
+                :title="`Ver minifiguras (${getPedidoMinifigCount(row)})`" class="action-btn action-btn--minifigs"
+                @click="verMinifiguras(row)" />
+              <Button icon="pi pi-pencil" severity="info" outlined rounded size="small" aria-label="Editar"
+                title="Editar" class="action-btn action-btn--edit" @click="openEdit(row)" />
+              <Button icon="pi pi-trash" severity="danger" outlined rounded size="small" aria-label="Eliminar"
+                title="Eliminar" class="action-btn action-btn--delete" @click="confirmDelete(row)" />
             </div>
           </template>
         </Column>
@@ -351,28 +268,14 @@ function confirmDelete(row: PedidoRow) {
 
     <ConfirmDialog />
 
-    <Dialog
-      v-model:visible="editDialogVisible"
-      modal
-      header="Editar pedido"
-      :style="{ width: '50vw' }"
-      :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-      :close-on-escape="true"
-      :dismissable-mask="true"
-    >
-      <EditarPedido
-        :visible="editDialogVisible"
-        :pedido="selectedPedido"
-        @close="editDialogVisible = false"
-        @success="onPedidoUpdated"
-      />
+    <Dialog v-model:visible="editDialogVisible" modal header="Editar pedido" :style="{ width: '50vw' }"
+      :breakpoints="{ '1199px': '75vw', '575px': '90vw' }" :close-on-escape="true" :dismissable-mask="true">
+      <EditarPedido :visible="editDialogVisible" :pedido="selectedPedido" @close="editDialogVisible = false"
+        @success="onPedidoUpdated" />
     </Dialog>
 
-    <MinifigurasDialog
-      v-model:visible="minifigDialogVisible"
-      :minifiguras="selectedMinifiguras"
-      :header="minifigDialogHeader"
-    />
+    <MinifigurasDialog v-model:visible="minifigDialogVisible" :minifiguras="selectedMinifiguras"
+      :header="minifigDialogHeader" />
   </TableCard>
 </template>
 
@@ -384,6 +287,13 @@ function confirmDelete(row: PedidoRow) {
   -webkit-overflow-scrolling: touch;
   margin: 0 -0.25rem;
   padding: 0 0.25rem;
+}
+
+.preview-image {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgb(0 0 0 / 30%);
+  width: 50rem;
+  height: 100%;
 }
 
 .cell-comments {

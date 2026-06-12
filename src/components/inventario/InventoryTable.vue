@@ -16,6 +16,7 @@ import LegoInstructions from "@/components/info/LegoInstructions.vue";
 import MinifigurasDialog from "@/components/minifiguras/MinifigurasDialog.vue";
 import { getInventoryInstrucciones } from "@/utils/instructions";
 import type { Minifigura } from "@/api/api.service";
+import Image from "primevue/image";
 
 const { column, searchValue, valueInfo } = storeToRefs(useDataSharingService());
 const toast = useToast();
@@ -50,7 +51,6 @@ const {
   rows,
   totalRecords,
   first,
-  fetchInventory,
   initializeInventory,
   catalogFilter,
   onPage,
@@ -107,47 +107,21 @@ function onPedidoCreated() {
     <template #title>
       <div class="inventory-title">
         <span>Inventario</span>
-        <Button
-          v-if="column === 'lego' && setMinifiguras.length > 0"
-          label="Minifiguras"
-          icon="pi pi-users"
-          size="small"
-          severity="success"
-          outlined
-          @click="verMinifigurasDelSet"
-        />
+        <Button v-if="column === 'lego' && setMinifiguras.length > 0" label="Minifiguras" icon="pi pi-users"
+          size="small" severity="success" outlined @click="verMinifigurasDelSet" />
       </div>
     </template>
 
-    <FilterBar
-      :filter-field="filterField"
-      :filter-value="filterValue"
-      :options="filterOptions"
-      :has-active-filter="hasActiveFilter"
-      :catalog-filter="catalogFilter"
-      field-id="inventory-filter-field"
-      value-id="inventory-filter-value"
-      @update:filter-field="filterField = $event"
-      @update:filter-value="filterValue = $event"
-      @clear="clearFilter"
-      @field-change="onFilterFieldChange"
-      @filter-input="onFilterInput"
-    />
+    <FilterBar :filter-field="filterField" :filter-value="filterValue" :options="filterOptions"
+      :has-active-filter="hasActiveFilter" :catalog-filter="catalogFilter" field-id="inventory-filter-field"
+      value-id="inventory-filter-value" @update:filter-field="filterField = $event"
+      @update:filter-value="filterValue = $event" @clear="clearFilter" @field-change="onFilterFieldChange"
+      @filter-input="onFilterInput" />
 
-    <ServerDataTable
-      :key="column"
-      :value="inventoryData"
-      :rows="rows"
-      :total-records="totalRecords"
-      :first="first"
-      :loading="loading"
-      :sort-field="sortField"
-      :sort-order="sortOrder"
-      @page="onPage"
-      @sort="onSort"
+    <ServerDataTable :key="column" :value="inventoryData" :rows="rows" :total-records="totalRecords" :first="first"
+      :loading="loading" :sort-field="sortField" :sort-order="sortOrder" @page="onPage" @sort="onSort"
       paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
-      currentPageReportTemplate="{first} to {last} of {totalRecords}"
-    >
+      currentPageReportTemplate="{first} to {last} of {totalRecords}">
       <Column v-if="column === 'pieza'" field="set_num" header="Código" sortable frozen>
         <template #body="{ data: row }">
           <span class="cell-code">{{ row.set_num }}</span>
@@ -161,28 +135,32 @@ function onPedidoCreated() {
 
       <Column header="Imagen">
         <template #body="{ data: row }">
-          <img
-            :src="
-              getValue(
+          <Image alt="Image" preview>
+            <template #previewicon>
+              <i class="pi pi-search"></i>
+            </template>
+            <template #image>
+              <img :src="getValue(
                 row,
                 (r) => r.part.part_img_url,
                 (r) => r.set_img_url,
               ) as string
-            "
-            alt="imagen"
-            class="imagen-table"
-            loading="lazy"
-          />
+                " alt="imagen" class="imagen-table"  loading="lazy"/>
+            </template>
+            <template #original="slotProps">
+              <img :src="getValue(
+                row,
+                (r) => r.part.part_img_url,
+                (r) => r.set_img_url,
+              ) as string
+                " alt="imagen" :style="slotProps.style" class="preview-image" @click="slotProps.previewCallback" />
+            </template>
+          </Image>
         </template>
       </Column>
 
-      <Column
-        :field="column === 'lego' ? 'part.name' : 'name'"
-        header="Nombre"
-        sortable
-        header-class="col-name"
-        body-class="col-name"
-      >
+      <Column :field="column === 'lego' ? 'part.name' : 'name'" header="Nombre" sortable header-class="col-name"
+        body-class="col-name">
         <template #body="{ data: row }">
           <span class="cell-name">{{
             getValue(
@@ -194,14 +172,8 @@ function onPedidoCreated() {
         </template>
       </Column>
 
-      <Column
-        v-if="column === 'lego'"
-        field="color.name"
-        header="Color"
-        sortable
-        header-class="col-optional"
-        body-class="col-optional"
-      >
+      <Column v-if="column === 'lego'" field="color.name" header="Color" sortable header-class="col-optional"
+        body-class="col-optional">
         <template #body="{ data: row }">
           {{ row.color.name }}
         </template>
@@ -212,45 +184,26 @@ function onPedidoCreated() {
         </template>
       </Column>
 
-      <Column
-        v-if="column === 'lego'"
-        field="quantity"
-        header="Cantidad en lego"
-        sortable
-        header-class="col-optional"
-        body-class="col-optional"
-      >
+      <Column v-if="column === 'lego'" field="quantity" header="Cantidad en lego" sortable header-class="col-optional"
+        body-class="col-optional">
         <template #body="{ data: row }">
           {{ row.quantity }}
         </template>
       </Column>
 
-      <Column
-        v-if="column === 'pieza'"
-        field="theme.name"
-        header="Tema"
-        sortable
-        header-class="col-optional"
-        body-class="col-optional"
-      >
+      <Column v-if="column === 'pieza'" field="theme.name" header="Tema" sortable header-class="col-optional"
+        body-class="col-optional">
         <template #body="{ data: row }">
           {{ row.theme?.at(-1)?.name ?? "—" }}
         </template>
       </Column>
 
-      <Column
-        v-if="column === 'lego'"
-        header="IDs externos"
-        header-class="col-external-ids"
-        body-class="col-external-ids"
-      >
+      <Column v-if="column === 'lego'" header="IDs externos" header-class="col-external-ids"
+        body-class="col-external-ids">
         <template #body="{ data: row }">
           <ul v-if="getExternalIdEntries(row.part?.external_ids).length" class="external-ids">
-            <li
-              v-for="entry in getExternalIdEntries(row.part?.external_ids)"
-              :key="entry.platform"
-              class="external-ids-item"
-            >
+            <li v-for="entry in getExternalIdEntries(row.part?.external_ids)" :key="entry.platform"
+              class="external-ids-item">
               <span class="external-ids-platform">{{ entry.platform }}</span>
               <span class="external-ids-value">{{ entry.ids }}</span>
             </li>
@@ -262,34 +215,13 @@ function onPedidoCreated() {
       <Column header="Acciones" header-class="col-actions" body-class="col-actions">
         <template #body="{ data: row }">
           <div class="action-group">
-            <LegoInstructions
-              v-if="column === 'pieza'"
-              variant="icon"
-              :instrucciones="getInventoryInstrucciones(row)"
-              :set-label="String(row.name ?? row.set_num ?? '')"
-            />
-            <Button
-              v-if="column === 'pieza'"
-              icon="pi pi-users"
-              outlined
-              rounded
-              size="small"
-              severity="success"
-              :aria-label="`Ver minifiguras (${minifigCount(row)})`"
-              :title="`Ver minifiguras (${minifigCount(row)})`"
-              class="action-btn action-btn--minifigs"
-              @click="verMinifiguras(row)"
-            />
-            <Button
-              icon="pi pi-plus-circle"
-              outlined
-              rounded
-              size="small"
-              aria-label="Agregar"
-              title="Agregar"
-              class="action-btn action-btn--add"
-              @click="agregarElemento(row)"
-            />
+            <LegoInstructions v-if="column === 'pieza'" variant="icon" :instrucciones="getInventoryInstrucciones(row)"
+              :set-label="String(row.name ?? row.set_num ?? '')" />
+            <Button v-if="column === 'pieza'" icon="pi pi-users" outlined rounded size="small" severity="success"
+              :aria-label="`Ver minifiguras (${minifigCount(row)})`" :title="`Ver minifiguras (${minifigCount(row)})`"
+              class="action-btn action-btn--minifigs" @click="verMinifiguras(row)" />
+            <Button icon="pi pi-plus-circle" outlined rounded size="small" aria-label="Agregar" title="Agregar"
+              class="action-btn action-btn--add" @click="agregarElemento(row)" />
           </div>
         </template>
       </Column>
@@ -299,31 +231,15 @@ function onPedidoCreated() {
       </template>
     </ServerDataTable>
 
-    <Dialog
-      v-model:visible="addDialogVisible"
-      modal
-      header="Agregar pedido"
-      :style="{ width: '50vw' }"
-      :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-      :close-on-escape="true"
-      :dismissable-mask="true"
-    >
-      <AgregarPedido
-        :visible="addDialogVisible"
-        :item="selectedItem"
-        :search-column="column"
-        :search-value="searchValue"
-        :set-nombre="setNombre"
-        @close="addDialogVisible = false"
-        @success="onPedidoCreated"
-      />
+    <Dialog v-model:visible="addDialogVisible" modal header="Agregar pedido" :style="{ width: '50vw' }"
+      :breakpoints="{ '1199px': '75vw', '575px': '90vw' }" :close-on-escape="true" :dismissable-mask="true">
+      <AgregarPedido :visible="addDialogVisible" :item="selectedItem" :search-column="column"
+        :search-value="searchValue" :set-nombre="setNombre" @close="addDialogVisible = false"
+        @success="onPedidoCreated" />
     </Dialog>
 
-    <MinifigurasDialog
-      v-model:visible="minifigDialogVisible"
-      :minifiguras="selectedMinifiguras"
-      :header="minifigDialogHeader"
-    />
+    <MinifigurasDialog v-model:visible="minifigDialogVisible" :minifiguras="selectedMinifiguras"
+      :header="minifigDialogHeader" />
   </TableCard>
 </template>
 
@@ -333,6 +249,13 @@ function onPedidoCreated() {
 .inventory-table :deep(.col-external-ids) {
   min-width: 10rem;
   max-width: 16rem;
+}
+
+.preview-image {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgb(0 0 0 / 30%);
+  width: 50rem;
+  height: 100%;
 }
 
 .external-ids {

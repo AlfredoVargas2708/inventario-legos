@@ -9,6 +9,7 @@ import Button from "primevue/button";
 import type { Instrucciones } from "@/api/api.service";
 import { useDataSharingService } from "@/api/data-sharing.service";
 import LegoInstructions from "@/components/info/LegoInstructions.vue";
+import Image from "primevue/image";
 
 type InfoItem =
   | { label: string; type: "text"; value: string | number }
@@ -70,13 +71,13 @@ const infoItems = computed((): InfoItem[] => {
       { label: "Piezas", type: "text", value: `${l.numParts} piezas` },
       ...(minifigurasTotal.value > 0
         ? [
-            {
-              label: "Minifiguras",
-              type: "tag" as const,
-              value: `${minifigurasTotal.value} minifiguras`,
-              severity: "info" as const,
-            },
-          ]
+          {
+            label: "Minifiguras",
+            type: "tag" as const,
+            value: `${minifigurasTotal.value} minifiguras`,
+            severity: "info" as const,
+          },
+        ]
         : []),
       {
         label: "Pedidos",
@@ -124,29 +125,24 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
       <div class="info-layout">
         <div class="info-sidebar">
           <div class="info-media">
-            <img :src="displayImage" :alt="displayAlt" class="info-img" />
+            <Image alt="Image" preview>
+              <template #previewicon>
+                <i class="pi pi-search"></i>
+              </template>
+              <template #image>
+                <img :src="displayImage" :alt="displayAlt" class="info-img" />
+              </template>
+              <template #original="slotProps">
+                <img :src="displayImage" :alt="displayAlt" :style="slotProps.style" class="preview-image"
+                  @click="slotProps.previewCallback" />
+              </template>
+            </Image>
           </div>
 
-          <Button
-            v-if="!isPedidos"
-            label="Pedidos"
-            icon="pi pi-list"
-            size="small"
-            severity="success"
-            outlined
-            class="add-btn"
-            @click="goToVista('pedidos')"
-          />
-          <Button
-            v-if="!isInventario"
-            label="Inventario"
-            icon="pi pi-box"
-            size="small"
-            severity="success"
-            outlined
-            class="add-btn"
-            @click="goToVista('inventario')"
-          />
+          <Button v-if="!isPedidos" label="Pedidos" icon="pi pi-list" size="small" severity="success" outlined
+            class="add-btn" @click="goToVista('pedidos')" />
+          <Button v-if="!isInventario" label="Inventario" icon="pi pi-box" size="small" severity="success" outlined
+            class="add-btn" @click="goToVista('inventario')" />
 
           <LegoInstructions v-if="showLegoInstructions" :instrucciones="instrucciones" />
         </div>
@@ -185,6 +181,13 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
 
 .info-card :deep(.p-card-content) {
   padding: 1.25rem;
+}
+
+.preview-image {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgb(0 0 0 / 30%);
+  width: 80rem;
+  height: 100%;
 }
 
 .info-layout {
