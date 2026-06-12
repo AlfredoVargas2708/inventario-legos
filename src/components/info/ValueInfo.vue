@@ -273,9 +273,11 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
 }
 
 .info-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+    width: 100%;
+    height: 100%;
+    max-width: 100px;
+    object-fit: contain;
+    max-height: 100px;
 }
 
 .info-body {
