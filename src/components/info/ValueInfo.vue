@@ -213,6 +213,11 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
     gap: 1rem;
   }
 
+  .preview-image {
+    width: 90vw;
+    height: auto;
+  }
+
   .info-sidebar {
     width: 100%;
     flex-direction: row;
@@ -270,7 +275,7 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
 .info-img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .info-body {
@@ -362,6 +367,11 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
     width: 7rem;
   }
 
+  .preview-image {
+    width: 70vw;
+    height: auto;
+  }
+
   .info-media {
     height: 7rem;
   }
@@ -388,24 +398,31 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
 
   .info-sidebar {
     width: 100%;
+    display: flex;
     flex-direction: row;
-    align-items: center;
+    flex-wrap: wrap;
+    align-items: flex-start;
     gap: 0.5rem;
   }
 
   .info-media {
-    width: 6rem;
+    width: 100%;
     height: 6rem;
+    flex-basis: 100%;
   }
 
   .add-btn {
-    flex: 1;
-    min-width: 8rem;
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 0;
   }
 
-  .add-btn,
+  .add-btn :deep(.p-button) {
+    width: 100%;
+  }
+
   .info-sidebar :deep(.instructions-section) {
-    min-width: 8rem;
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 0;
   }
 
   .info-list-item {
@@ -426,6 +443,14 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
   }
 }
 
+@media (min-width: 768px) and (max-width: 991px) {
+
+  .preview-image {
+    width: 60vw;
+    height: auto;
+  }
+}
+
 @media (min-width: 992px) {
   .info-card :deep(.p-card-content) {
     padding: 1.5rem;
@@ -433,6 +458,11 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
 
   .info-layout {
     gap: 1.5rem;
+  }
+
+  .preview-image {
+    width: 50rem;
+    height: 100%;
   }
 }
 </style>
