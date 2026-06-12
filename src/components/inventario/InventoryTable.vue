@@ -316,4 +316,76 @@ function onPedidoCreated() {
   gap: 0.75rem;
   flex-wrap: wrap;
 }
+
+/* Responsive Styles */
+
+@media (max-width: 575px) {
+  .inventory-table :deep(.col-external-ids) {
+    min-width: 8rem;
+    max-width: 12rem;
+  }
+
+  .preview-image {
+    width: 90vw;
+    height: auto;
+  }
+
+  .external-ids-item {
+    gap: 0.2rem;
+    padding: 0.1rem 0.375rem;
+    font-size: 0.65rem;
+  }
+
+  .inventory-title {
+    gap: 0.5rem;
+  }
+
+  .inventory-title > span {
+    flex: 0 0 100%;
+  }
+
+  .inventory-title :deep(.p-button) {
+    width: 100%;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 767px) {
+  .inventory-table :deep(.col-external-ids) {
+    min-width: 9rem;
+    max-width: 14rem;
+  }
+
+  .preview-image {
+    width: 70vw;
+    height: auto;
+  }
+
+  .inventory-title {
+    gap: 0.625rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .inventory-table :deep(.col-external-ids) {
+    min-width: 10rem;
+    max-width: 15rem;
+  }
+
+  .preview-image {
+    width: 60vw;
+    height: auto;
+  }
+}
+
+@media (min-width: 992px) {
+  .inventory-table :deep(.col-external-ids) {
+    min-width: 10rem;
+    max-width: 16rem;
+  }
+
+  .preview-image {
+    width: 50rem;
+    height: 100%;
+  }
+}
 </style>

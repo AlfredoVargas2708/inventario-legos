@@ -19,10 +19,12 @@ import ValueInfo from "@/components/info/ValueInfo.vue";
 .app-layout {
   min-height: 100vh;
   padding: 1rem;
+  background: var(--p-surface-ground, #f8fafc);
 }
 
 .app-container {
   width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -32,6 +34,22 @@ import ValueInfo from "@/components/info/ValueInfo.vue";
   gap: 1rem;
 }
 
+@media (max-width: 575px) {
+  .app-layout {
+    padding: 0.75rem;
+  }
+
+  .app-container {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 767px) {
+  .app-layout {
+    padding: 1rem 1.25rem;
+  }
+}
+
 @media (min-width: 768px) {
   .app-layout {
     padding: 1.5rem 2rem 2rem;
@@ -39,6 +57,12 @@ import ValueInfo from "@/components/info/ValueInfo.vue";
 
   .app-main {
     gap: 1.25rem;
+  }
+}
+
+@media (min-width: 992px) {
+  .app-container {
+    max-width: 1200px;
   }
 }
 </style>

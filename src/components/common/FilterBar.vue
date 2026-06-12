@@ -150,9 +150,35 @@ function handleFieldChange() {
   margin-bottom: 0.125rem;
 }
 
+@media (max-width: 575px) {
+  .filter-bar {
+    gap: 0.5rem;
+    padding: 0 0 0.75rem;
+  }
+
+  .filter-field {
+    gap: 0.25rem;
+  }
+
+  .filter-field--value {
+    flex: 1 1 8rem;
+  }
+
+  .filter-clear-btn {
+    margin-bottom: 0rem;
+  }
+}
+
 @media (min-width: 576px) {
   .filter-field--column {
     flex: 0 0 12rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .filter-bar {
+    gap: 1rem;
+    padding: 0 0 1.25rem;
   }
 }
 </style>

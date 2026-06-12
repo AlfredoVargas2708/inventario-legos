@@ -181,6 +181,29 @@ function onSelect() {
   padding-bottom: 0.5rem;
 }
 
+@media (max-width: 575px) {
+  .app-header {
+    padding: 1rem 1rem;
+  }
+
+  .header-title {
+    font-size: 1.25rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.75rem;
+  }
+
+  .search-bar {
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .search-field {
+    gap: 0.25rem;
+  }
+}
+
 @media (min-width: 576px) {
   .header-title {
     font-size: 1.75rem;
@@ -198,6 +221,12 @@ function onSelect() {
 
   .header-title {
     font-size: 2rem;
+  }
+}
+
+@media (min-width: 992px) {
+  .app-header {
+    padding: 1.75rem 2rem;
   }
 }
 </style>

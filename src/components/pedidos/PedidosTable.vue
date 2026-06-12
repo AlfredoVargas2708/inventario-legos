@@ -332,20 +332,90 @@ function confirmDelete(row: PedidoRow) {
   color: var(--p-text-muted-color, #64748b);
 }
 
-@media (min-width: 992px) {
-  .table-hint {
-    display: none;
+@media (max-width: 575px) {
+  .table-scroll {
+    margin: 0 -0.375rem;
+    padding: 0 0.375rem;
   }
-}
 
-@media (max-width: 768px) {
-  .inventory-table :deep(.col-optional) {
+  .preview-image {
+    width: 90vw;
+    height: auto;
+  }
+
+  .cell-comments {
+    max-width: 6rem;
+    font-size: 0.7rem;
+  }
+
+  .inventory-table :deep(.col-optional),
+  .inventory-table :deep(.col-external-ids) {
     display: none;
   }
 
   .action-group {
     flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .action-btn :deep(.p-button) {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .table-hint {
     gap: 0.25rem;
+    margin: 0.5rem 0 0;
+    font-size: 0.65rem;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 767px) {
+  .preview-image {
+    width: 70vw;
+    height: auto;
+  }
+
+  .cell-comments {
+    max-width: 8rem;
+  }
+
+  .inventory-table :deep(.col-optional) {
+    display: none;
+  }
+
+  .action-group {
+    gap: 0.25rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .preview-image {
+    width: 60vw;
+    height: auto;
+  }
+
+  .cell-comments {
+    max-width: 9rem;
+  }
+
+  .table-hint {
+    display: flex;
+  }
+}
+
+@media (min-width: 992px) {
+  .preview-image {
+    width: 50rem;
+    height: 100%;
+  }
+
+  .cell-comments {
+    max-width: 10rem;
+  }
+
+  .table-hint {
+    display: none;
   }
 }
 

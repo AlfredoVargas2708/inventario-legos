@@ -8,6 +8,7 @@ import ConfirmationService from "primevue/confirmationservice";
 import ToastService from "primevue/toastservice";
 import Aura from "@primeuix/themes/aura";
 import "primeicons/primeicons.css";
+import "primeflex/primeflex.css";
 
 const app = createApp(App);
 

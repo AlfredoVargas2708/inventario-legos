@@ -206,6 +206,30 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
   width: 7.5rem;
 }
 
+@media (max-width: 575px) {
+  .info-layout {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .info-sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .info-media {
+    width: 6rem !important;
+    height: 6rem !important;
+  }
+
+  .add-btn {
+    flex: 1;
+    min-width: 8rem;
+  }
+}
+
 .info-media {
   flex-shrink: 0;
   display: flex;
@@ -329,27 +353,86 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
   }
 }
 
+@media (min-width: 576px) and (max-width: 767px) {
+  .info-card :deep(.p-card-content) {
+    padding: 1rem;
+  }
+
+  .info-sidebar {
+    width: 7rem;
+  }
+
+  .info-media {
+    height: 7rem;
+  }
+
+  .add-btn {
+    width: 100%;
+  }
+}
+
 @media (max-width: 575px) {
+  .info-card {
+    border-radius: 8px;
+  }
+
+  .info-card :deep(.p-card-content) {
+    padding: 0.75rem;
+  }
+
   .info-layout {
     flex-direction: column;
     align-items: stretch;
+    gap: 1rem;
   }
 
   .info-sidebar {
     width: 100%;
     flex-direction: row;
     align-items: center;
+    gap: 0.5rem;
   }
 
   .info-media {
-    width: 7.5rem;
-    height: 7.5rem;
+    width: 6rem;
+    height: 6rem;
+  }
+
+  .add-btn {
+    flex: 1;
+    min-width: 8rem;
   }
 
   .add-btn,
   .info-sidebar :deep(.instructions-section) {
-    flex: 1;
     min-width: 8rem;
+  }
+
+  .info-list-item {
+    gap: 0.75rem;
+    padding: 0.5rem 0.625rem;
+    flex-wrap: wrap;
+  }
+
+  .info-list-label {
+    font-size: 0.7rem;
+    flex: 0 0 45%;
+  }
+
+  .info-list-value {
+    font-size: 0.8125rem;
+    flex: 0 0 55%;
+    text-align: left;
+  }
+}
+
+@media (min-width: 992px) {
+  .info-card :deep(.p-card-content) {
+    padding: 1.5rem;
+  }
+
+  .info-layout {
+    gap: 1.5rem;
   }
 }
 </style>
