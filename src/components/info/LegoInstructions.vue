@@ -128,13 +128,13 @@ const dialogHeader = computed(() =>
 }
 
 .action-btn--instructions :deep(.p-button:not(:disabled):hover) {
-  background: var(--p-blue-50, #eff6ff);
+  background: color-mix(in srgb, var(--p-info-color) 12%, transparent);
 }
 
 .instructions-intro {
   margin: 0 0 1rem;
   font-size: 0.8125rem;
-  color: var(--p-text-muted-color, #64748b);
+  color: var(--app-text-muted);
 }
 
 .instructions-list {
@@ -157,8 +157,8 @@ const dialogHeader = computed(() =>
   padding: 0.75rem 0.875rem;
   border-radius: 8px;
   border: 1px solid var(--p-content-border-color, #e2e8f0);
-  background: var(--p-surface-50, #f8fafc);
-  color: inherit;
+  background: var(--p-content-background);
+  color: var(--p-text-color);
   text-decoration: none;
   transition:
     background-color 0.2s ease,
@@ -167,13 +167,13 @@ const dialogHeader = computed(() =>
 }
 
 .instructions-link:hover {
-  background: var(--p-blue-50, #eff6ff);
-  border-color: var(--p-blue-200, #bfdbfe);
+  background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
+  border-color: var(--p-primary-color);
   transform: translateY(-1px);
 }
 
 .instructions-link--booklet {
-  background: var(--p-surface-100, #f1f5f9);
+  background: var(--p-content-hover-background, var(--p-surface-100));
 }
 
 .instructions-link-text {
@@ -191,12 +191,12 @@ const dialogHeader = computed(() =>
 
 .instructions-link-hint {
   font-size: 0.75rem;
-  color: var(--p-text-muted-color, #64748b);
+  color: var(--app-text-muted);
 }
 
 .instructions-link-icon {
   flex-shrink: 0;
   font-size: 0.75rem;
-  color: var(--p-text-muted-color, #64748b);
+  color: var(--app-text-muted);
 }
 </style>

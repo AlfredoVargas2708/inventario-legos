@@ -308,19 +308,7 @@ function confirmDelete(row: PedidoRow) {
   margin: 0;
   padding: 1rem 0;
   text-align: center;
-  color: var(--p-text-muted-color, #64748b);
-}
-
-.action-btn--edit :deep(.p-button:not(:disabled):hover) {
-  background: var(--p-blue-50, #eff6ff);
-}
-
-.action-btn--minifigs :deep(.p-button:not(:disabled):hover) {
-  background: var(--p-green-50, #f0fdf4);
-}
-
-.action-btn--delete :deep(.p-button:not(:disabled):hover) {
-  background: var(--p-red-50, #fef2f2);
+  color: var(--app-text-muted);
 }
 
 .table-hint {
@@ -329,7 +317,7 @@ function confirmDelete(row: PedidoRow) {
   gap: 0.375rem;
   margin: 0.75rem 0 0;
   font-size: 0.75rem;
-  color: var(--p-text-muted-color, #64748b);
+  color: var(--app-text-muted);
 }
 
 @media (max-width: 575px) {

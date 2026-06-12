@@ -284,7 +284,7 @@ function onPedidoCreated() {
 
 .external-ids-platform {
   font-weight: 600;
-  color: var(--p-text-muted-color, #64748b);
+  color: var(--app-text-muted);
   white-space: nowrap;
 }
 
@@ -298,15 +298,7 @@ function onPedidoCreated() {
 }
 
 .external-ids-empty {
-  color: var(--p-text-muted-color, #64748b);
-}
-
-.action-btn--add :deep(.p-button:not(:disabled):hover) {
-  background: var(--p-blue-50, #eff6ff);
-}
-
-.action-btn--minifigs :deep(.p-button:not(:disabled):hover) {
-  background: var(--p-green-50, #f0fdf4);
+  color: var(--app-text-muted);
 }
 
 .inventory-title {

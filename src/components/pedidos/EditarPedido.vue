@@ -237,7 +237,7 @@ async function submit() {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--p-text-muted-color, #64748b);
+  color: var(--app-text-muted);
 }
 
 .form-actions {

@@ -9,6 +9,7 @@ import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { useToast } from "primevue/usetoast";
 import { useDataSharingService } from "@/api/data-sharing.service";
+import ThemeToggle from "@/components/common/ThemeToggle.vue";
 import { SEARCH_TYPE_OPTIONS } from "@/constants/search";
 
 const selected = ref("");
@@ -75,6 +76,7 @@ function onSelect() {
         <h1 class="header-title">Inventario de Legos</h1>
         <p class="header-subtitle">Busca por set o pieza para ver pedidos e inventario</p>
       </div>
+      <ThemeToggle />
     </div>
 
     <div class="search-bar">
@@ -122,11 +124,18 @@ function onSelect() {
 
 <style scoped>
 .app-header {
-  background: var(--p-content-background, #fff);
+  background: var(--p-content-background);
   border: 1px solid var(--p-content-border-color, #e2e8f0);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+}
+
+.header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .header-title {
@@ -135,12 +144,13 @@ function onSelect() {
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.3;
+  color: var(--p-text-color);
 }
 
 .header-subtitle {
   margin: 0.25rem 0 0;
   font-size: 0.875rem;
-  color: var(--p-text-muted-color, #64748b);
+  color: var(--app-text-muted);
 }
 
 .search-bar {
@@ -171,7 +181,7 @@ function onSelect() {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--p-text-muted-color, #64748b);
+  color: var(--app-text-muted);
 }
 
 .search-spinner {

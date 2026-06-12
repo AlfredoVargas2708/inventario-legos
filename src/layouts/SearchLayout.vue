@@ -19,7 +19,7 @@ import ValueInfo from "@/components/info/ValueInfo.vue";
 .app-layout {
   min-height: 100vh;
   padding: 1rem;
-  background: var(--p-surface-ground, #f8fafc);
+  background: var(--p-surface-ground);
 }
 
 .app-container {

@@ -12,13 +12,22 @@ html {
   font-size: 16px;
 }
 
+:root {
+  --app-text-muted: var(--p-text-muted-color, #64748b);
+}
+
+html.dark {
+  --app-text-muted: var(--p-text-muted-color, #94a3b8);
+}
+
 body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--p-surface-50, #f1f5f9);
-  color: var(--p-text-color, #1e293b);
+  background: var(--p-surface-ground);
+  color: var(--p-text-color);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #app {

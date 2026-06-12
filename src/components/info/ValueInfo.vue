@@ -243,7 +243,7 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
   width: 100%;
   height: 7.5rem;
   padding: 0.5rem;
-  background: var(--p-surface-50, #f8fafc);
+  background: var(--p-content-background);
   border-radius: 10px;
   border: 1px solid var(--p-content-border-color, #e2e8f0);
 }
@@ -307,7 +307,7 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
   align-items: center;
   gap: 1rem;
   padding: 0.625rem 0.875rem;
-  background: var(--p-content-background, #fff);
+  background: var(--p-content-background);
   border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
 }
 
@@ -316,7 +316,7 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
 }
 
 .info-list-item:nth-child(even) {
-  background: var(--p-surface-50, #f8fafc);
+  background: var(--p-content-hover-background, var(--p-surface-100));
 }
 
 .info-list-label {
@@ -324,7 +324,7 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--p-text-muted-color, #64748b);
+  color: var(--app-text-muted);
   flex-shrink: 0;
 }
 
@@ -333,6 +333,7 @@ const displayAlt = computed(() => legoInfo.value?.title ?? piezaInfo.value?.titl
   font-weight: 500;
   text-align: right;
   min-width: 0;
+  color: var(--p-text-color);
 }
 
 .info-color {

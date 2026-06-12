@@ -273,7 +273,7 @@ async function submit() {
   object-fit: contain;
   flex-shrink: 0;
   border-radius: 6px;
-  background: #fff;
+  background: var(--p-content-background);
 }
 
 .item-preview-text {
@@ -284,18 +284,19 @@ async function submit() {
   margin: 0;
   font-weight: 600;
   font-size: 0.9375rem;
+  color: var(--p-text-color);
 }
 
 .item-preview-detail {
   margin: 0.125rem 0 0;
   font-size: 0.8125rem;
-  color: var(--p-text-muted-color, #64748b);
+  color: var(--app-text-muted);
 }
 
 .item-preview-context {
   margin: 0.25rem 0 0;
   font-size: 0.75rem;
-  color: var(--p-text-muted-color, #64748b);
+  color: var(--app-text-muted);
 }
 
 .form-grid {
@@ -319,7 +320,7 @@ async function submit() {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--p-text-muted-color, #64748b);
+  color: var(--app-text-muted);
 }
 
 .form-actions {

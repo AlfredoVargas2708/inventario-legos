@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="">
   <head>
+    <script>
+      (function () {
+        var saved = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
     <meta charset="UTF-8">
     <link rel="icon" href="https://www.tiendalego.cl/cdn/shop/files/lego_logo_srgb_80x80.png?v=1737129454">
     <link rel="stylesheet" href="/styles.scss">
